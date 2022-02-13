@@ -3,7 +3,7 @@ use std::{collections::HashMap, io::Read, path::Path};
 use walkdir::WalkDir;
 use clap::Parser;
 
-const BASE_URL: &str = "https://mirrors.bfsu.edu.cn/anthon/debs-retro/";
+const BASE_URL: &str = "https://repo.aosc.io/debs-retro/";
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
