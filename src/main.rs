@@ -1,4 +1,5 @@
 use clap::Parser;
+use indexmap::IndexMap;
 use std::{collections::HashMap, path::Path};
 
 mod repo;
@@ -31,7 +32,6 @@ fn main() {
         for i in result {
             file_vec.push(i.name);
         }
-        file_vec.sort();
         let file_str = file_vec.join("\n");
         let path = Path::new(&output);
         let path = if path.is_absolute() {
@@ -56,7 +56,7 @@ fn main() {
 
 fn get_result(
     repo_map: HashMap<String, (String, String)>,
-    tree_map: HashMap<String, String>,
+    tree_map: IndexMap<String, String>,
 ) -> Vec<TreeVsRepo> {
     let mut result = Vec::new();
     for (k, v) in tree_map {

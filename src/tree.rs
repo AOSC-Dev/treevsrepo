@@ -1,9 +1,10 @@
 use anyhow::{anyhow, Result};
-use std::{collections::HashMap, io::Read, path::Path};
+use indexmap::IndexMap;
+use std::{io::Read, path::Path};
 use walkdir::WalkDir;
 
-pub fn get_tree_package_list(tree: &Path) -> Result<HashMap<String, String>> {
-    let mut result = HashMap::new();
+pub fn get_tree_package_list(tree: &Path) -> Result<IndexMap<String, String>> {
+    let mut result = IndexMap::new();
     std::env::set_current_dir(tree)
         .map_err(|e| anyhow!("Cannot switch to tree directory! why: {}", e))?;
     for entry in WalkDir::new(".")
@@ -47,6 +48,7 @@ pub fn get_tree_package_list(tree: &Path) -> Result<HashMap<String, String>> {
             }
         }
     }
+    result.sort_keys();
 
     Ok(result)
 }

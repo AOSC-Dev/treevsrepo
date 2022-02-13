@@ -6,16 +6,8 @@ const BASE_URL: &str = "https://repo.aosc.io/debs-retro/";
 
 pub fn get_repo_package_ver_list() -> Result<HashMap<String, (String, String)>> {
     let mut result = HashMap::new();
-    let binary_i486 = reqwest::blocking::get(format!(
-        "{}/{}",
-        BASE_URL, "dists/stable/main/binary-i486/Packages"
-    ))?
-    .text()?;
-    let binary_all = reqwest::blocking::get(format!(
-        "{}/{}",
-        BASE_URL, "dists/stable/main/binary-all/Packages"
-    ))?
-    .text()?;
+    let binary_i486 = get_list_from_repo("dists/stable/main/binary-i486/Packages")?;
+    let binary_all = get_list_from_repo("dists/stable/main/binary-all/Packages")?;
     let binary_i486_vec = binary_i486.split('\n');
     let binary_all_vec = binary_all.split('\n');
     let mut last_index = 0;
@@ -45,7 +37,16 @@ fn get_value(package_vec: &[&str], value: &str) -> String {
         .iter()
         .position(|x| x.contains(&format!("{}: ", value)))
         .unwrap();
-    let result = package_vec[index].to_string();
+    let result = package_vec[index]
+        .strip_prefix(&format!("{}: ", value))
+        .unwrap()
+        .to_string();
 
     result
+}
+
+fn get_list_from_repo(url: &str) -> Result<String> {
+    let result = reqwest::blocking::get(format!("{}/{}", BASE_URL, url))?.text()?;
+
+    Ok(result)
 }
