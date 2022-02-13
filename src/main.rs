@@ -16,11 +16,12 @@ fn main() {
     let args = Args::parse();
     let repo_map = get_repo_package_ver_list().unwrap();
     let tree_map = get_tree_package_list(Path::new(&args.tree)).unwrap();
+    println!("{:<30}{:<20}\t\t{}", "Name", "Tree version", "Repo version");
     for (k, v) in tree_map {
         if let Some(tree_version) = repo_map.get(&k) {
             if &v != tree_version {
                 println!(
-                    "Name: {}, Tree version: {}, Repo version: {}",
+                    "{:<30}{:<20}\t\t{}",
                     k, tree_version, v
                 );
             };
