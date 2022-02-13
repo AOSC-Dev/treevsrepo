@@ -10,23 +10,42 @@ const BASE_URL: &str = "https://repo.aosc.io/debs-retro/";
 struct Args {
     #[clap(short, long)]
     tree: String,
+    #[clap(short = 'o', long)]
+    output: Option<String>,
+}
+
+struct TreeVsRepo {
+    name: String,
+    arch: String,
+    tree_version: String,
+    repo_version: String,
 }
 
 fn main() {
     let args = Args::parse();
+    let now_env = std::env::current_dir().expect("Cannot get your env!");
     let repo_map = get_repo_package_ver_list().unwrap();
     let tree_map = get_tree_package_list(Path::new(&args.tree)).unwrap();
-    println!(
-        "{:<30}{:<20}{:<20}\t\t{}",
-        "Name", "Tree version", "Repo version", "Arch"
-    );
-    for (k, v) in tree_map {
-        if let Some((tree_version, arch)) = repo_map.get(&k) {
-            if &v != tree_version {
-                println!("{:<30}{:<20}{:<20}\t\t{}", k, tree_version, v, arch);
-            };
+    let result = get_result(repo_map, tree_map);
+    if let Some(output) = args.output {
+        let mut file_vec = Vec::new();
+        for i in result {
+            file_vec.push(i.name);
         }
-        continue;
+        file_vec.sort();
+        let file_str = file_vec.join("\n");
+        std::fs::write(now_env.join(output), file_str).unwrap();
+    } else {
+        println!(
+            "{:<30}{:<30}{:<30}\t\tArch",
+            "Name", "Tree version", "Repo version"
+        );
+        for i in result {
+            println!(
+                "{:<30}{:<30}{:<30}\t\t{}",
+                i.name, i.tree_version, i.repo_version, i.arch
+            );
+        }
     }
 }
 
@@ -131,4 +150,25 @@ fn get_repo_package_ver_list() -> Result<HashMap<String, (String, String)>> {
     }
 
     Ok(result)
+}
+
+fn get_result(
+    repo_map: HashMap<String, (String, String)>,
+    tree_map: HashMap<String, String>,
+) -> Vec<TreeVsRepo> {
+    let mut result = Vec::new();
+    for (k, v) in tree_map {
+        if let Some((repo_version, arch)) = repo_map.get(&k) {
+            if &v != repo_version {
+                result.push(TreeVsRepo {
+                    name: k,
+                    arch: arch.to_string(),
+                    tree_version: v,
+                    repo_version: repo_version.to_string(),
+                });
+            };
+        }
+    }
+
+    result
 }
