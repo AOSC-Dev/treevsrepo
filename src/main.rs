@@ -34,7 +34,13 @@ fn main() {
         }
         file_vec.sort();
         let file_str = file_vec.join("\n");
-        std::fs::write(now_env.join(output), file_str).unwrap();
+        let path = Path::new(&output);
+        let path = if path.is_absolute() {
+            path.to_path_buf()
+        } else {
+            now_env.join(output)
+        };
+        std::fs::write(path, file_str).unwrap();
     } else {
         println!(
             "{:<30}{:<30}{:<30}\t\tArch",
