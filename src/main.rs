@@ -16,14 +16,14 @@ fn main() {
     let args = Args::parse();
     let repo_map = get_repo_package_ver_list().unwrap();
     let tree_map = get_tree_package_list(Path::new(&args.tree)).unwrap();
-    println!("{:<30}{:<20}\t\t{}", "Name", "Tree version", "Repo version");
+    println!(
+        "{:<30}{:<20}{:<20}\t\t{}",
+        "Name", "Tree version", "Repo version", "Arch"
+    );
     for (k, v) in tree_map {
-        if let Some(tree_version) = repo_map.get(&k) {
+        if let Some((tree_version, arch)) = repo_map.get(&k) {
             if &v != tree_version {
-                println!(
-                    "{:<30}{:<20}\t\t{}",
-                    k, tree_version, v
-                );
+                println!("{:<30}{:<20}{:<20}\t\t{}", k, tree_version, v, arch);
             };
         }
         continue;
@@ -79,7 +79,7 @@ fn get_tree_package_list(tree: &Path) -> Result<HashMap<String, String>> {
     Ok(result)
 }
 
-fn get_repo_package_ver_list() -> Result<HashMap<String, String>> {
+fn get_repo_package_ver_list() -> Result<HashMap<String, (String, String)>> {
     let mut result = HashMap::new();
     let binary_i486 = reqwest::blocking::get(format!(
         "{}/{}",
@@ -112,10 +112,20 @@ fn get_repo_package_ver_list() -> Result<HashMap<String, String>> {
                 .iter()
                 .position(|x| x.contains("Version: "))
                 .unwrap();
+            let arch_index = package_vec
+                .iter()
+                .position(|x| x.contains("Architecture: "))
+                .unwrap();
             let version = package_vec[version_index]
                 .strip_prefix("Version: ")
                 .unwrap();
-            result.insert(package_name.to_string(), version.to_string());
+            let arch = package_vec[arch_index]
+                .strip_prefix("Architecture: ")
+                .unwrap();
+            result.insert(
+                package_name.to_string(),
+                (version.to_string(), arch.to_string()),
+            );
             last_index = index;
         }
     }
