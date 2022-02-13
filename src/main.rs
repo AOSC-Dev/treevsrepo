@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
+use clap::Parser;
 use std::{collections::HashMap, io::Read, path::Path};
 use walkdir::WalkDir;
-use clap::Parser;
 
 const BASE_URL: &str = "https://repo.aosc.io/debs-retro/";
 
@@ -12,7 +12,6 @@ struct Args {
     tree: String,
 }
 
-
 fn main() {
     let args = Args::parse();
     let repo_map = get_repo_package_ver_list().unwrap();
@@ -20,7 +19,10 @@ fn main() {
     for (k, v) in tree_map {
         if let Some(tree_version) = repo_map.get(&k) {
             if &v != tree_version {
-                println!("Name: {}, Tree version: {}, repo version: {}", k, tree_version, v);
+                println!(
+                    "Name: {}, Tree version: {}, Repo version: {}",
+                    k, tree_version, v
+                );
             };
         }
         continue;
@@ -50,10 +52,10 @@ fn get_tree_package_list(tree: &Path) -> Result<HashMap<String, String>> {
             if let Ok(mut spec) = spec {
                 let mut spec_buf = String::new();
                 spec.read_to_string(&mut spec_buf)?;
-                let spec_vec = spec_buf.split("\n").collect::<Vec<_>>();
+                let spec_vec = spec_buf.split('\n').collect::<Vec<_>>();
                 let mut defines_buf = String::new();
                 defines.read_to_string(&mut defines_buf)?;
-                let defines_vec = defines_buf.split("\n").collect::<Vec<_>>();
+                let defines_vec = defines_buf.split('\n').collect::<Vec<_>>();
                 let ver_index = spec_vec.iter().position(|x| x.contains("VER=")).unwrap();
                 let ver = spec_vec[ver_index].strip_prefix("VER=");
                 let rel = spec_vec.iter().position(|x| x.contains("REL="));
@@ -78,19 +80,40 @@ fn get_tree_package_list(tree: &Path) -> Result<HashMap<String, String>> {
 
 fn get_repo_package_ver_list() -> Result<HashMap<String, String>> {
     let mut result = HashMap::new();
-    let binary_i486 = reqwest::blocking::get(format!("{}/{}", BASE_URL, "dists/stable/main/binary-i486/Packages"))?.text()?;
-    let binary_all = reqwest::blocking::get(format!("{}/{}", BASE_URL, "dists/stable/main/binary-all/Packages"))?.text()?;
-    let binary_i486_vec = binary_i486.split("\n").collect::<Vec<_>>();
-    let binary_all_vec = binary_all.split("\n").collect::<Vec<_>>();
+    let binary_i486 = reqwest::blocking::get(format!(
+        "{}/{}",
+        BASE_URL, "dists/stable/main/binary-i486/Packages"
+    ))?
+    .text()?;
+    let binary_all = reqwest::blocking::get(format!(
+        "{}/{}",
+        BASE_URL, "dists/stable/main/binary-all/Packages"
+    ))?
+    .text()?;
+    let binary_i486_vec = binary_i486.split('\n');
+    let binary_all_vec = binary_all.split('\n');
     let mut last_index = 0;
-    let all = binary_i486_vec.into_iter().chain(binary_all_vec).collect::<Vec<_>>();
+    let all = binary_i486_vec
+        .into_iter()
+        .chain(binary_all_vec)
+        .collect::<Vec<_>>();
     for (index, entry) in all.iter().enumerate() {
         if entry == &"" && index != last_index + 1 {
             let package_vec = &all[last_index..index];
-            let package_name_index = package_vec.iter().position(|x| x.contains("Package: ")).unwrap();
-            let package_name = package_vec[package_name_index].strip_prefix("Package: ").unwrap();
-            let version_index = package_vec.iter().position(|x| x.contains("Version: ")).unwrap();
-            let version = package_vec[version_index].strip_prefix("Version: ").unwrap();
+            let package_name_index = package_vec
+                .iter()
+                .position(|x| x.contains("Package: "))
+                .unwrap();
+            let package_name = package_vec[package_name_index]
+                .strip_prefix("Package: ")
+                .unwrap();
+            let version_index = package_vec
+                .iter()
+                .position(|x| x.contains("Version: "))
+                .unwrap();
+            let version = package_vec[version_index]
+                .strip_prefix("Version: ")
+                .unwrap();
             result.insert(package_name.to_string(), version.to_string());
             last_index = index;
         }
