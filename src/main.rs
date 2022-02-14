@@ -4,7 +4,7 @@ use std::path::Path;
 mod repo;
 mod tree;
 
-const DEFAULT_URL: &'static str = "https://repo.aosc.io";
+const DEFAULT_URL: &str = "https://repo.aosc.io";
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
