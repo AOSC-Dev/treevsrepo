@@ -9,12 +9,16 @@ const DEFAULT_URL: &'static str = "https://repo.aosc.io";
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
 struct Args {
+    /// Set tree directory. e.g: /home/saki/aosc-os-abbs
     #[clap(short, long)]
     tree: String,
+    /// Output result to file.
     #[clap(short = 'o', long)]
     output: Option<String>,
+    /// Set search arch.
     #[clap(short, long, min_values = 1)]
     arch: Option<Vec<String>>,
+    /// Set mirror.
     #[clap(short = 'm', long, default_value = DEFAULT_URL)]
     mirror: String,
 }
