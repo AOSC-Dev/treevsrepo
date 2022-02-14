@@ -39,22 +39,33 @@ fn handle(entrys: Vec<String>) -> Vec<(String, String, String)> {
     let mut last_index = 0;
     let mut result = Vec::new();
     let mut temp_vec = Vec::new();
-    let mut first_name = entrys[0].to_string();
+    let mut last_name = entrys
+        .first()
+        .unwrap()
+        .strip_prefix("Package: ")
+        .unwrap()
+        .to_string();
     for (index, entry) in entrys.iter().enumerate() {
         if entry.is_empty() && index != last_index + 1 {
             let package_vec = &entrys[last_index..index];
             let package_name = get_value(package_vec, "Package");
             let version = get_value(package_vec, "Version");
             let arch = get_value(package_vec, "Architecture");
-            temp_vec.push((
-                package_name.to_string(),
-                version.to_string(),
-                arch.to_string(),
-            ));
-            if first_name != package_name {
+            if last_name == package_name {
+                temp_vec.push((
+                    package_name.to_string(),
+                    version.to_string(),
+                    arch.to_string(),
+                ));
+            } else {
                 result.push(temp_vec.last().unwrap().to_owned());
                 temp_vec.clear();
-                first_name = package_name;
+                temp_vec.push((
+                    package_name.to_string(),
+                    version.to_string(),
+                    arch.to_string(),
+                ));
+                last_name = package_name;
             }
             last_index = index;
         }
