@@ -1,10 +1,9 @@
 use anyhow::{anyhow, Result};
-use indexmap::IndexMap;
 use std::{io::Read, path::Path};
 use walkdir::WalkDir;
 
-pub fn get_tree_package_list(tree: &Path) -> Result<IndexMap<String, String>> {
-    let mut result = IndexMap::new();
+pub fn get_tree_package_list(tree: &Path) -> Result<Vec<(String, String)>> {
+    let mut result = Vec::new();
     std::env::set_current_dir(tree)
         .map_err(|e| anyhow!("Cannot switch to tree directory! why: {}", e))?;
     for entry in WalkDir::new(".")
@@ -43,12 +42,12 @@ pub fn get_tree_package_list(tree: &Path) -> Result<IndexMap<String, String>> {
                         let epoch = defines_vec[epoch_index].strip_prefix("PKGEPOCH=").unwrap();
                         ver = format!("{}:{}", epoch, ver);
                     }
-                    result.insert(name.to_string(), ver);
+                    result.push((name.to_string(), ver));
                 }
             }
         }
     }
-    result.sort_keys();
+    result.sort();
 
     Ok(result)
 }

@@ -1,6 +1,5 @@
 use clap::Parser;
-use indexmap::IndexMap;
-use std::{collections::HashMap, path::Path};
+use std::path::Path;
 
 mod repo;
 mod tree;
@@ -12,6 +11,8 @@ struct Args {
     tree: String,
     #[clap(short = 'o', long)]
     output: Option<String>,
+    #[clap(short, long, min_values = 1)]
+    arch: Option<Vec<String>>,
 }
 
 struct TreeVsRepo {
@@ -24,7 +25,8 @@ struct TreeVsRepo {
 fn main() {
     let args = Args::parse();
     let now_env = std::env::current_dir().expect("Cannot get your env!");
-    let repo_map = repo::get_repo_package_ver_list().unwrap();
+    let arch = args.arch;
+    let repo_map = repo::get_repo_package_ver_list(arch).unwrap();
     let tree_map = tree::get_tree_package_list(Path::new(&args.tree)).unwrap();
     let result = get_result(repo_map, tree_map);
     if let Some(output) = args.output {
@@ -55,17 +57,21 @@ fn main() {
 }
 
 fn get_result(
-    repo_map: HashMap<String, (String, String)>,
-    tree_map: IndexMap<String, String>,
+    repo_vec: Vec<(String, String, String)>,
+    tree_vec: Vec<(String, String)>,
 ) -> Vec<TreeVsRepo> {
     let mut result = Vec::new();
-    for (k, v) in tree_map {
-        if let Some((repo_version, arch)) = repo_map.get(&k) {
-            if &v != repo_version {
+    for (package, tree_version) in tree_vec {
+        let filter_map = repo_vec
+            .iter()
+            .filter(|(p, _, _)| p == &package)
+            .collect::<Vec<_>>();
+        for (_, repo_version, arch) in filter_map {
+            if &tree_version != repo_version {
                 result.push(TreeVsRepo {
-                    name: k,
+                    name: package.to_string(),
                     arch: arch.to_string(),
-                    tree_version: v,
+                    tree_version: tree_version.to_string(),
                     repo_version: repo_version.to_string(),
                 });
             };

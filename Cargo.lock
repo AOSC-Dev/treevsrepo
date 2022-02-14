@@ -857,7 +857,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
- "indexmap",
  "reqwest",
  "walkdir",
 ]
