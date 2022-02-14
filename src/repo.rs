@@ -1,11 +1,5 @@
 use anyhow::Result;
 
-macro_rules! BINARY_LIST_URL_RETRO {
-    () => {
-        "https://mirrors.bfsu.edu.cn/anthon/debs-retro/dists/stable/main/binary-{}/Packages"
-    };
-}
-
 const ARCH_LIST_RETRO: &[&str] = &[
     "i486",
     "armel",
@@ -18,6 +12,7 @@ const ARCH_LIST_RETRO: &[&str] = &[
 ];
 
 pub fn get_repo_package_ver_list(
+    mirror: &str,
     arch_list: Option<Vec<String>>,
 ) -> Result<Vec<(String, String, String)>> {
     let mut result = Vec::new();
@@ -31,7 +26,7 @@ pub fn get_repo_package_ver_list(
             .collect::<Vec<String>>()
     };
     for i in &arch_list {
-        let entry = get_list_from_repo(i)?
+        let entry = get_list_from_repo(i, mirror)?
             .split('\n')
             .map(|x| x.into())
             .collect::<Vec<String>>();
@@ -69,8 +64,13 @@ fn get_value(package_vec: &[String], value: &str) -> String {
     result
 }
 
-fn get_list_from_repo(binary_name: &str) -> Result<String> {
-    let result = reqwest::blocking::get(&format!(BINARY_LIST_URL_RETRO!(), binary_name))?.text()?;
+
+fn get_list_from_repo(binary_name: &str, mirror: &str) -> Result<String> {
+    let url = format!(
+        "{}/debs-retro/dists/stable/main/binary-{}/Packages",
+        mirror, binary_name
+    );
+    let result = reqwest::blocking::get(&url)?.error_for_status()?.text()?;
 
     Ok(result)
 }

@@ -4,6 +4,8 @@ use std::path::Path;
 mod repo;
 mod tree;
 
+const DEFAULT_URL: &'static str = "https://repo.aosc.io";
+
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
 struct Args {
@@ -13,6 +15,8 @@ struct Args {
     output: Option<String>,
     #[clap(short, long, min_values = 1)]
     arch: Option<Vec<String>>,
+    #[clap(short = 'm', long, default_value = DEFAULT_URL)]
+    mirror: String,
 }
 
 struct TreeVsRepo {
@@ -32,12 +36,12 @@ fn main() {
             eprintln!("Usage: treevsrepo --output FILE --arch i486 all");
             std::process::exit(1);
         }
-        let repo_map = repo::get_repo_package_ver_list(arch).unwrap();
+        let repo_map = repo::get_repo_package_ver_list(&args.mirror, arch).unwrap();
         let tree_map = tree::get_tree_package_list(Path::new(&args.tree)).unwrap();
         let result = get_result(repo_map, tree_map);
         result_to_file(result, output, now_env);
     } else {
-        let repo_map = repo::get_repo_package_ver_list(arch).unwrap();
+        let repo_map = repo::get_repo_package_ver_list(&args.mirror, arch).unwrap();
         let tree_map = tree::get_tree_package_list(Path::new(&args.tree)).unwrap();
         let result = get_result(repo_map, tree_map);
         println!(
