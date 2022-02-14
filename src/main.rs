@@ -23,6 +23,7 @@ struct TreeVsRepo {
 }
 
 fn main() {
+    env_logger::init();
     let args = Args::parse();
     let now_env = std::env::current_dir().expect("Cannot get your env!");
     let arch = args.arch;
