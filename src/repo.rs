@@ -16,7 +16,6 @@ pub fn get_repo_package_ver_list(
     arch_list: Option<Vec<String>>,
 ) -> Result<Vec<(String, String, String)>> {
     let mut result = Vec::new();
-    let mut all = Vec::new();
     let arch_list = if let Some(arch_list) = arch_list {
         arch_list
     } else {
@@ -26,29 +25,48 @@ pub fn get_repo_package_ver_list(
             .collect::<Vec<String>>()
     };
     for i in &arch_list {
-        let entry = get_list_from_repo(i, mirror)?
+        let entrys = get_list_from_repo(i, mirror)?
             .split('\n')
             .map(|x| x.into())
             .collect::<Vec<String>>();
-        all.extend(entry);
+        result.extend(handle(entrys));
     }
+
+    Ok(result)
+}
+
+fn handle(entrys: Vec<String>) -> Vec<(String, String, String)> {
     let mut last_index = 0;
-    for (index, entry) in all.iter().enumerate() {
+    let mut result = Vec::new();
+    let mut temp_vec = Vec::new();
+    let mut first_name = entrys[0].to_string();
+    for (index, entry) in entrys.iter().enumerate() {
         if entry == "" && index != last_index + 1 {
-            let package_vec = &all[last_index..index];
+            let package_vec = &entrys[last_index..index];
             let package_name = get_value(package_vec, "Package");
             let version = get_value(package_vec, "Version");
             let arch = get_value(package_vec, "Architecture");
-            result.push((
-                package_name.to_string(),
-                version.to_string(),
-                arch.to_string(),
-            ));
+            if first_name == package_name {
+                temp_vec.push((
+                    package_name.to_string(),
+                    version.to_string(),
+                    arch.to_string(),
+                ));
+            } else {
+                temp_vec.push((
+                    package_name.to_string(),
+                    version.to_string(),
+                    arch.to_string(),
+                ));
+                result.push(temp_vec.last().unwrap().to_owned());
+                temp_vec.clear();
+                first_name = package_name;
+            }
             last_index = index;
         }
     }
 
-    Ok(result)
+    result
 }
 
 fn get_value(package_vec: &[String], value: &str) -> String {

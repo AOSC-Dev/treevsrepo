@@ -84,21 +84,18 @@ fn get_result(
 ) -> Vec<TreeVsRepo> {
     let mut result = Vec::new();
     for (package, tree_version) in tree_vec {
-        let mut filter_vec = repo_vec
+        let filter_vec = repo_vec
             .iter()
             .filter(|(p, _, _)| p == &package)
             .collect::<Vec<_>>();
-        filter_vec.reverse();
-        let mut last_arch = String::new();
         for (_, repo_version, arch) in filter_vec {
-            if &tree_version != repo_version && &last_arch != arch {
+            if &tree_version != repo_version {
                 result.push(TreeVsRepo {
                     name: package.to_string(),
                     arch: arch.to_string(),
                     tree_version: tree_version.to_string(),
                     repo_version: repo_version.to_string(),
                 });
-                last_arch = arch.to_string();
             };
         }
     }
