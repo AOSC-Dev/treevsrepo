@@ -26,20 +26,20 @@ pub fn get_repo_package_ver_list(
         arch_list
     } else {
         ARCH_LIST_RETRO
-            .into_iter()
+            .iter()
             .map(|x| x.to_string())
             .collect::<Vec<String>>()
     };
     for i in &arch_list {
-        let entry = get_list_from_repo(&i)?
-            .split("\n")
+        let entry = get_list_from_repo(i)?
+            .split('\n')
             .map(|x| x.into())
             .collect::<Vec<String>>();
         all.extend(entry);
     }
     let mut last_index = 0;
     for (index, entry) in all.iter().enumerate() {
-        if entry == &"" && index != last_index + 1 {
+        if entry == "" && index != last_index + 1 {
             let package_vec = &all[last_index..index];
             let package_name = get_value(package_vec, "Package");
             let version = get_value(package_vec, "Version");

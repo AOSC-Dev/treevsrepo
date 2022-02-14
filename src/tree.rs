@@ -43,8 +43,12 @@ pub fn get_tree_package_list(tree: &Path) -> Result<Vec<(String, String)>> {
                     if let Some(epoch) = defines.get("PKGEPOCH") {
                         ver = format!("{}:{}", epoch, ver);
                     }
+                } else {
+                    defines.unwrap_err();
                 }
                 result.push((name.to_string(), ver));
+            } else {
+                spec.unwrap_err();
             }
         }
     }
