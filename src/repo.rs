@@ -1,4 +1,5 @@
 use anyhow::Result;
+use reqwest::Url;
 
 const ARCH_LIST_RETRO: &[&str] = &[
     "i486",
@@ -64,13 +65,12 @@ fn get_value(package_vec: &[String], value: &str) -> String {
     result
 }
 
-
 fn get_list_from_repo(binary_name: &str, mirror: &str) -> Result<String> {
-    let url = format!(
-        "{}/debs-retro/dists/stable/main/binary-{}/Packages",
-        mirror, binary_name
-    );
-    let result = reqwest::blocking::get(&url)?.error_for_status()?.text()?;
+    let url = Url::parse(mirror)?.join(&format!(
+        "debs-retro/dists/stable/main/binary-{}/Packages",
+        binary_name
+    ))?;
+    let result = reqwest::blocking::get(url)?.error_for_status()?.text()?;
 
     Ok(result)
 }
