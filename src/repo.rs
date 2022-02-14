@@ -109,7 +109,17 @@ fn get_list_from_repo(binary_name: &str, mirror: &str) -> Result<String> {
 #[test]
 fn test_handle() {
     let s = "Package: qaq\nVersion: 1.0\nArchitecture: qwq\n\nPackage: qaq\nVersion: 1.1\nArchitecture: qwq\n\nPackage: aaaa\nVersion: 2.0\nArchitecture: qwq\n\n";
-    let entrys = s.split('\n').into_iter().map(|x| x.into()).collect::<Vec<String>>();
+    let entrys = s
+        .split('\n')
+        .into_iter()
+        .map(|x| x.into())
+        .collect::<Vec<String>>();
 
-    assert_eq!(handle(entrys), vec![("qaq".to_string(), "1.1".to_string(), "qwq".to_string()), ("aaaa".to_string(), "2.0".to_string(), "qwq".to_string())]);
+    assert_eq!(
+        handle(entrys),
+        vec![
+            ("qaq".to_string(), "1.1".to_string(), "qwq".to_string()),
+            ("aaaa".to_string(), "2.0".to_string(), "qwq".to_string())
+        ]
+    );
 }
