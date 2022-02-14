@@ -2,7 +2,7 @@ use anyhow::Result;
 
 macro_rules! BINARY_LIST_URL_RETRO {
     () => {
-        "https://repo.aosc.io/debs-retro/dists/stable/main/binary-{}/Packages"
+        "https://mirrors.bfsu.edu.cn/anthon/debs-retro/dists/stable/main/binary-{}/Packages"
     };
 }
 
@@ -30,7 +30,7 @@ pub fn get_repo_package_ver_list(
             .map(|x| x.to_string())
             .collect::<Vec<String>>()
     };
-    for i in arch_list {
+    for i in &arch_list {
         let entry = get_list_from_repo(&i)?
             .split("\n")
             .map(|x| x.into())
