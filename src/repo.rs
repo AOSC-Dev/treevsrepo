@@ -65,11 +65,12 @@ fn handle(entrys: Vec<String>) -> Vec<RepoPackage> {
                     arch.to_string(),
                 ));
             } else {
-                let (name, version, arch) = temp_vec.last().unwrap().to_owned();
+                let (temp_last_name, temp_last_version, temp_last_arch) =
+                    temp_vec.last().unwrap().to_owned();
                 let repo_package = RepoPackage {
-                    name,
-                    version: version.to_string(),
-                    arch: arch.to_string(),
+                    name: temp_last_name,
+                    version: temp_last_version.to_string(),
+                    arch: temp_last_arch.to_string(),
                 };
                 result.push(repo_package);
                 temp_vec.clear();
