@@ -12,13 +12,13 @@ const DEFAULT_URL: &str = "https://repo.aosc.io";
 #[clap(about, version, author)]
 struct Args {
     /// Set tree directory. e.g: /home/saki/aosc-os-abbs
-    #[clap(short, long)]
+    #[clap(short = 't', long)]
     tree: String,
     /// Output result to file.
     #[clap(short = 'o', long, requires = "arch")]
     output: Option<String>,
     /// Set search arch.
-    #[clap(short, long, min_values = 1)]
+    #[clap(short = 'a', long, min_values = 1)]
     arch: Option<Vec<String>>,
     /// Set mirror.
     #[clap(short = 'm', long, default_value = DEFAULT_URL)]
@@ -79,18 +79,50 @@ fn result_to_file(result: Vec<TreeVsRepo>, output: String, now_env: std::path::P
 fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<TreeVsRepo> {
     let mut result = Vec::new();
     for tree_package in tree_vec {
-        let filter_vec = repo_vec
+        let repo_filter_vec = repo_vec
             .iter()
             .filter(|x| x.name == tree_package.name)
             .collect::<Vec<_>>();
-        for repo_package in filter_vec {
+        for repo_package in repo_filter_vec.iter() {
             if tree_package.version != repo_package.version {
-                result.push(TreeVsRepo {
-                    name: tree_package.name.to_string(),
-                    arch: repo_package.arch.to_string(),
-                    tree_version: tree_package.version.to_string(),
-                    repo_version: repo_package.version.to_string(),
-                });
+                if (tree_package.is_noarch && repo_package.arch == "all")
+                    || (!tree_package.is_noarch && repo_package.arch != "all")
+                {
+                    result.push(TreeVsRepo {
+                        name: tree_package.name.to_string(),
+                        arch: repo_package.arch.to_string(),
+                        tree_version: tree_package.version.to_string(),
+                        repo_version: repo_package.version.to_string(),
+                    });
+                } else if tree_package.is_noarch && repo_package.arch != "all" {
+                    if repo_filter_vec
+                        .iter()
+                        .any(|x| x.arch == "all" && x.version == tree_package.version)
+                    {
+                        continue;
+                    } else {
+                        result.push(TreeVsRepo {
+                            name: tree_package.name.to_string(),
+                            arch: repo_package.arch.to_string(),
+                            tree_version: tree_package.version.to_string(),
+                            repo_version: repo_package.version.to_string(),
+                        });
+                    }
+                } else if !tree_package.is_noarch && repo_package.arch == "all" {
+                    if repo_filter_vec
+                        .iter()
+                        .any(|x| x.arch != "all" && x.version == tree_package.version)
+                    {
+                        continue;
+                    } else {
+                        result.push(TreeVsRepo {
+                            name: tree_package.name.to_string(),
+                            arch: repo_package.arch.to_string(),
+                            tree_version: tree_package.version.to_string(),
+                            repo_version: repo_package.version.to_string(),
+                        });
+                    }
+                }
             }
         }
     }
