@@ -57,22 +57,18 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
                 } else {
                     defines.unwrap_err();
                 }
-                result.push((name, ver, is_noarch));
+                result.push(TreePackage {
+                    name,
+                    version: ver,
+                    is_noarch,
+                });
             } else {
                 spec.unwrap_err();
             }
         }
     }
-    result.sort();
 
     result
-        .into_iter()
-        .map(|(name, ver, is_noarch)| TreePackage {
-            name,
-            version: ver,
-            is_noarch,
-        })
-        .collect::<Vec<_>>()
 }
 
 fn read_ab(file: &mut File) -> Result<HashMap<String, String>> {

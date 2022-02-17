@@ -78,7 +78,8 @@ fn result_to_file(result: Vec<TreeVsRepo>, output: String, now_env: std::path::P
 
 fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<TreeVsRepo> {
     let mut result = Vec::new();
-    for tree_package in tree_vec {
+    let mut all_no_match = Vec::new();
+    for tree_package in tree_vec.iter() {
         let repo_filter_vec = repo_vec
             .iter()
             .filter(|x| x.name == tree_package.name)
@@ -91,6 +92,17 @@ fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<Tre
                         .any(|x| x.arch == "all" && x.version == tree_package.version)
                     {
                         continue;
+                    } else if repo_filter_vec
+                        .iter()
+                        .all(|x| x.version != tree_package.version)
+                    {
+                        if all_no_match
+                            .iter()
+                            .all(|x: &&RepoPackage| x.name != repo_package.name)
+                        {
+                            all_no_match.push(&(*(*repo_package)));
+                        }
+                        continue;
                     }
                 } else if !tree_package.is_noarch && repo_package.arch == "all" {
                     if repo_filter_vec
@@ -98,17 +110,62 @@ fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<Tre
                         .any(|x| x.arch != "all" && x.version == tree_package.version)
                     {
                         continue;
+                    } else if repo_filter_vec
+                        .iter()
+                        .all(|x| x.version != tree_package.version)
+                    {
+                        if all_no_match
+                            .iter()
+                            .all(|x: &&RepoPackage| x.name != repo_package.name)
+                        {
+                            all_no_match.push(repo_package);
+                        }
+                        continue;
                     }
                 }
+                if all_no_match.iter().all(|x| x.name != repo_package.name) {
+                    result.push(TreeVsRepo {
+                        name: tree_package.name.to_string(),
+                        arch: repo_package.arch.to_string(),
+                        tree_version: tree_package.version.to_string(),
+                        repo_version: repo_package.version.to_string(),
+                    });
+                }
+            }
+        }
+    }
+    for i in all_no_match {
+        let tree_index = tree_vec.iter().position(|x| x.name == i.name).unwrap();
+        let tree_version = tree_vec[tree_index].version.to_string();
+        let is_noarch = tree_vec[tree_index].is_noarch;
+        if is_noarch {
+            let repo_index = repo_vec
+                .iter()
+                .position(|x| x.name == i.name && x.arch == "all")
+                .unwrap();
+            let repo_version = repo_vec[repo_index].version.to_string();
+            result.push(TreeVsRepo {
+                name: i.name.to_string(),
+                tree_version,
+                arch: "all".to_string(),
+                repo_version,
+            })
+        } else {
+            let repo_all_match = repo_vec
+                .iter()
+                .filter(|x| x.name == i.name && x.arch != "all")
+                .collect::<Vec<_>>();
+            for j in repo_all_match {
                 result.push(TreeVsRepo {
-                    name: tree_package.name.to_string(),
-                    arch: repo_package.arch.to_string(),
-                    tree_version: tree_package.version.to_string(),
-                    repo_version: repo_package.version.to_string(),
+                    name: j.name.to_string(),
+                    arch: j.arch.to_string(),
+                    tree_version: tree_version.to_string(),
+                    repo_version: j.version.to_string(),
                 });
             }
         }
     }
+    result.sort_by(|x, y| x.name.cmp(&y.name));
 
     result
 }
