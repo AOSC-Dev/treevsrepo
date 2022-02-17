@@ -60,7 +60,7 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
                 result.push((name, ver, is_noarch));
             } else {
                 spec.unwrap_err();
-            };
+            }
         }
     }
     result.sort();

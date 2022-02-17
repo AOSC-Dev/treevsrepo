@@ -85,28 +85,12 @@ fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<Tre
             .collect::<Vec<_>>();
         for repo_package in repo_filter_vec.iter() {
             if tree_package.version != repo_package.version {
-                if (tree_package.is_noarch && repo_package.arch == "all")
-                    || (!tree_package.is_noarch && repo_package.arch != "all")
-                {
-                    result.push(TreeVsRepo {
-                        name: tree_package.name.to_string(),
-                        arch: repo_package.arch.to_string(),
-                        tree_version: tree_package.version.to_string(),
-                        repo_version: repo_package.version.to_string(),
-                    });
-                } else if tree_package.is_noarch && repo_package.arch != "all" {
+                if tree_package.is_noarch && repo_package.arch != "all" {
                     if repo_filter_vec
                         .iter()
                         .any(|x| x.arch == "all" && x.version == tree_package.version)
                     {
                         continue;
-                    } else {
-                        result.push(TreeVsRepo {
-                            name: tree_package.name.to_string(),
-                            arch: repo_package.arch.to_string(),
-                            tree_version: tree_package.version.to_string(),
-                            repo_version: repo_package.version.to_string(),
-                        });
                     }
                 } else if !tree_package.is_noarch && repo_package.arch == "all" {
                     if repo_filter_vec
@@ -114,15 +98,14 @@ fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<Tre
                         .any(|x| x.arch != "all" && x.version == tree_package.version)
                     {
                         continue;
-                    } else {
-                        result.push(TreeVsRepo {
-                            name: tree_package.name.to_string(),
-                            arch: repo_package.arch.to_string(),
-                            tree_version: tree_package.version.to_string(),
-                            repo_version: repo_package.version.to_string(),
-                        });
                     }
                 }
+                result.push(TreeVsRepo {
+                    name: tree_package.name.to_string(),
+                    arch: repo_package.arch.to_string(),
+                    tree_version: tree_package.version.to_string(),
+                    repo_version: repo_package.version.to_string(),
+                });
             }
         }
     }
