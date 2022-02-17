@@ -11,10 +11,17 @@ const ARCH_LIST_RETRO: &[&str] = &[
     "all",
 ];
 
+#[derive(Debug, PartialEq)]
+pub struct RepoPackage {
+    pub name: String,
+    pub version: String,
+    pub arch: String,
+}
+
 pub fn get_repo_package_ver_list(
     mirror: &str,
     arch_list: Option<Vec<String>>,
-) -> Result<Vec<(String, String, String)>> {
+) -> Result<Vec<RepoPackage>> {
     let mut result = Vec::new();
     let arch_list = if let Some(arch_list) = arch_list {
         arch_list
@@ -35,7 +42,7 @@ pub fn get_repo_package_ver_list(
     Ok(result)
 }
 
-fn handle(entrys: Vec<String>) -> Vec<(String, String, String)> {
+fn handle(entrys: Vec<String>) -> Vec<RepoPackage> {
     let mut last_index = 0;
     let mut result = Vec::new();
     let mut temp_vec = Vec::new();
@@ -58,7 +65,13 @@ fn handle(entrys: Vec<String>) -> Vec<(String, String, String)> {
                     arch.to_string(),
                 ));
             } else {
-                result.push(temp_vec.last().unwrap().to_owned());
+                let (name, version, arch) = temp_vec.last().unwrap().to_owned();
+                let repo_package = RepoPackage {
+                    name,
+                    version: version.to_string(),
+                    arch: arch.to_string(),
+                };
+                result.push(repo_package);
                 temp_vec.clear();
                 temp_vec.push((
                     package_name.to_string(),
@@ -69,7 +82,13 @@ fn handle(entrys: Vec<String>) -> Vec<(String, String, String)> {
             }
             last_index = index;
         } else if index == entrys.len() - 1 {
-            result.push(temp_vec.last().unwrap().to_owned());
+            let (name, version, arch) = temp_vec.last().unwrap().to_owned();
+            let repo_package = RepoPackage {
+                name,
+                version,
+                arch,
+            };
+            result.push(repo_package);
         }
     }
 
@@ -91,16 +110,14 @@ fn get_value(package_vec: &[String], value: &str) -> String {
 
 fn get_list_from_repo(binary_name: &str, mirror: &str) -> Result<String> {
     let url = if mirror.ends_with('/') {
-        format!(
-            "{}debs-retro/dists/stable/main/binary-{}/Packages",
-            mirror, binary_name
-        )
+        mirror.to_string()
     } else {
-        format!(
-            "{}/debs-retro/dists/stable/main/binary-{}/Packages",
-            mirror, binary_name
-        )
+        format!("{}/", mirror)
     };
+    let url = format!(
+        "{}debs-retro/dists/stable/main/binary-{}/Packages",
+        url, binary_name
+    );
     let result = reqwest::blocking::get(url)?.error_for_status()?.text()?;
 
     Ok(result)
@@ -118,8 +135,16 @@ fn test_handle() {
     assert_eq!(
         handle(entrys),
         vec![
-            ("qaq".to_string(), "1.1".to_string(), "qwq".to_string()),
-            ("aaaa".to_string(), "2.0".to_string(), "qwq".to_string())
+            RepoPackage {
+                name: "qaq".to_string(),
+                version: "1.1".to_string(),
+                arch: "qwq".to_string(),
+            },
+            RepoPackage {
+                name: "aaaa".to_string(),
+                version: "2.0".to_string(),
+                arch: "qwq".to_string()
+            }
         ]
     );
 }

@@ -1,5 +1,7 @@
 use clap::Parser;
+use repo::RepoPackage;
 use std::path::Path;
+use tree::TreePackage;
 
 mod repo;
 mod tree;
@@ -37,12 +39,12 @@ fn main() {
     let arch = args.arch;
     if let Some(output) = args.output {
         let repo_map = repo::get_repo_package_ver_list(&args.mirror, arch).unwrap();
-        let tree_map = tree::get_tree_package_list(Path::new(&args.tree)).unwrap();
+        let tree_map = tree::get_tree_package_list(Path::new(&args.tree));
         let result = get_result(repo_map, tree_map);
         result_to_file(result, output, now_env);
     } else {
         let repo_map = repo::get_repo_package_ver_list(&args.mirror, arch).unwrap();
-        let tree_map = tree::get_tree_package_list(Path::new(&args.tree)).unwrap();
+        let tree_map = tree::get_tree_package_list(Path::new(&args.tree));
         let result = get_result(repo_map, tree_map);
         println!(
             "{:<30}{:<30}{:<30}\t\tArch",
@@ -74,23 +76,20 @@ fn result_to_file(result: Vec<TreeVsRepo>, output: String, now_env: std::path::P
     std::fs::write(path, file_str).unwrap();
 }
 
-fn get_result(
-    repo_vec: Vec<(String, String, String)>,
-    tree_vec: Vec<(String, String)>,
-) -> Vec<TreeVsRepo> {
+fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<TreeVsRepo> {
     let mut result = Vec::new();
-    for (package, tree_version) in tree_vec {
+    for tree_package in tree_vec {
         let filter_vec = repo_vec
             .iter()
-            .filter(|(p, _, _)| p == &package)
+            .filter(|x| x.name == tree_package.name)
             .collect::<Vec<_>>();
-        for (_, repo_version, arch) in filter_vec {
-            if &tree_version != repo_version {
+        for repo_package in filter_vec {
+            if tree_package.version != repo_package.version {
                 result.push(TreeVsRepo {
-                    name: package.to_string(),
-                    arch: arch.to_string(),
-                    tree_version: tree_version.to_string(),
-                    repo_version: repo_version.to_string(),
+                    name: tree_package.name.to_string(),
+                    arch: repo_package.arch.to_string(),
+                    tree_version: tree_package.version.to_string(),
+                    repo_version: repo_package.version.to_string(),
                 });
             }
         }
