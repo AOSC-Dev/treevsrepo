@@ -25,6 +25,7 @@ struct Args {
     mirror: String,
 }
 
+#[derive(Debug, PartialEq)]
 struct TreeVsRepo {
     name: String,
     arch: String,
@@ -99,6 +100,10 @@ fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<Tre
                         if all_no_match
                             .iter()
                             .all(|x: &&RepoPackage| x.name != repo_package.name)
+                            && result
+                                .iter()
+                                .position(|x: &TreeVsRepo| x.name == repo_package.name)
+                                .is_none()
                         {
                             all_no_match.push(&(*(*repo_package)));
                         }
@@ -117,6 +122,10 @@ fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<Tre
                         if all_no_match
                             .iter()
                             .all(|x: &&RepoPackage| x.name != repo_package.name)
+                            && result
+                                .iter()
+                                .position(|x: &TreeVsRepo| x.name == repo_package.name)
+                                .is_none()
                         {
                             all_no_match.push(repo_package);
                         }
@@ -125,7 +134,7 @@ fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<Tre
                 }
                 if all_no_match.iter().all(|x| x.name != repo_package.name) {
                     result.push(TreeVsRepo {
-                        name: tree_package.name.to_string(),
+                        name: repo_package.name.to_string(),
                         arch: repo_package.arch.to_string(),
                         tree_version: tree_package.version.to_string(),
                         repo_version: repo_package.version.to_string(),
@@ -168,4 +177,193 @@ fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<Tre
     result.sort_by(|x, y| x.name.cmp(&y.name));
 
     result
+}
+
+#[test]
+fn test_get_result_1() {
+    let repo_vec = vec![RepoPackage {
+        name: "qaq".to_string(),
+        version: "114514".to_string(),
+        arch: "all".to_string(),
+    }];
+    let tree_vec = vec![TreePackage {
+        name: "qaq".to_string(),
+        version: "114514".to_string(),
+        is_noarch: true,
+    }];
+
+    assert!(get_result(repo_vec, tree_vec).is_empty());
+}
+
+#[test]
+fn test_get_result_2() {
+    let repo_vec = vec![
+        RepoPackage {
+            name: "qaq".to_string(),
+            version: "114514".to_string(),
+            arch: "owo".to_string(),
+        },
+        RepoPackage {
+            name: "qaq".to_string(),
+            version: "1.0".to_string(),
+            arch: "all".to_string(),
+        },
+    ];
+    let tree_vec = vec![TreePackage {
+        name: "qaq".to_string(),
+        version: "1:1.0".to_string(),
+        is_noarch: true,
+    }];
+
+    assert_eq!(
+        get_result(repo_vec, tree_vec),
+        vec![TreeVsRepo {
+            name: "qaq".to_string(),
+            arch: "all".to_string(),
+            tree_version: "1:1.0".to_string(),
+            repo_version: "1.0".to_string(),
+        }],
+    )
+}
+
+#[test]
+fn test_get_result_3() {
+    let repo_vec = vec![
+        RepoPackage {
+            name: "qaq".to_string(),
+            version: "114513".to_string(),
+            arch: "owo".to_string(),
+        },
+        RepoPackage {
+            name: "qaq".to_string(),
+            version: "1.0".to_string(),
+            arch: "all".to_string(),
+        },
+    ];
+    let tree_vec = vec![TreePackage {
+        name: "qaq".to_string(),
+        version: "114514".to_string(),
+        is_noarch: false,
+    }];
+
+    assert_eq!(
+        get_result(repo_vec, tree_vec),
+        vec![TreeVsRepo {
+            name: "qaq".to_string(),
+            arch: "owo".to_string(),
+            tree_version: "114514".to_string(),
+            repo_version: "114513".to_string(),
+        }],
+    )
+}
+
+#[test]
+fn test_get_result_4() {
+    let repo_vec = vec![
+        RepoPackage {
+            name: "qaq".to_string(),
+            version: "114513".to_string(),
+            arch: "owo".to_string(),
+        },
+        RepoPackage {
+            name: "qaq".to_string(),
+            version: "1.0".to_string(),
+            arch: "pwp".to_string(),
+        },
+    ];
+    let tree_vec = vec![TreePackage {
+        name: "qaq".to_string(),
+        version: "114514".to_string(),
+        is_noarch: false,
+    }];
+
+    assert_eq!(
+        get_result(repo_vec, tree_vec),
+        vec![
+            TreeVsRepo {
+                name: "qaq".to_string(),
+                arch: "owo".to_string(),
+                tree_version: "114514".to_string(),
+                repo_version: "114513".to_string(),
+            },
+            TreeVsRepo {
+                name: "qaq".to_string(),
+                arch: "pwp".to_string(),
+                tree_version: "114514".to_string(),
+                repo_version: "1.0".to_string(),
+            }
+        ],
+    )
+}
+
+#[test]
+fn test_get_result_5() {
+    let repo_vec = vec![
+        RepoPackage {
+            name: "qaq".to_string(),
+            version: "114513".to_string(),
+            arch: "owo".to_string(),
+        },
+        RepoPackage {
+            name: "qaq".to_string(),
+            version: "1.0".to_string(),
+            arch: "pwp".to_string(),
+        },
+        RepoPackage {
+            name: "qaq".to_string(),
+            version: "1.0".to_string(),
+            arch: "all".to_string(),
+        }
+    ];
+    let tree_vec = vec![TreePackage {
+        name: "qaq".to_string(),
+        version: "114514".to_string(),
+        is_noarch: false,
+    }];
+
+    assert_eq!(
+        get_result(repo_vec, tree_vec),
+        vec![
+            TreeVsRepo {
+                name: "qaq".to_string(),
+                arch: "owo".to_string(),
+                tree_version: "114514".to_string(),
+                repo_version: "114513".to_string(),
+            },
+            TreeVsRepo {
+                name: "qaq".to_string(),
+                arch: "pwp".to_string(),
+                tree_version: "114514".to_string(),
+                repo_version: "1.0".to_string(),
+            }
+        ],
+    )
+}
+
+#[test]
+fn test_get_result_6() {
+    let repo_vec = vec![
+        RepoPackage {
+            name: "qaq".to_string(),
+            version: "114513".to_string(),
+            arch: "owo".to_string(),
+        },
+        RepoPackage {
+            name: "qaq".to_string(),
+            version: "1.0".to_string(),
+            arch: "pwp".to_string(),
+        },
+        RepoPackage {
+            name: "qaq".to_string(),
+            version: "1.0".to_string(),
+            arch: "all".to_string(),
+        }
+    ];
+    let tree_vec = vec![TreePackage {
+        name: "qaq".to_string(),
+        version: "1.0".to_string(),
+        is_noarch: true,
+    }];
+
+    assert!(get_result(repo_vec, tree_vec).is_empty())
 }
