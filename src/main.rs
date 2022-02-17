@@ -13,7 +13,7 @@ struct Args {
     #[clap(short, long)]
     tree: String,
     /// Output result to file.
-    #[clap(short = 'o', long)]
+    #[clap(short = 'o', long, requires = "arch")]
     output: Option<String>,
     /// Set search arch.
     #[clap(short, long, min_values = 1)]
@@ -36,10 +36,6 @@ fn main() {
     let now_env = std::env::current_dir().expect("Cannot get your env!");
     let arch = args.arch;
     if let Some(output) = args.output {
-        if arch.is_none() {
-            eprintln!("Usage: treevsrepo --output FILE --arch i486 all");
-            std::process::exit(1);
-        }
         let repo_map = repo::get_repo_package_ver_list(&args.mirror, arch).unwrap();
         let tree_map = tree::get_tree_package_list(Path::new(&args.tree)).unwrap();
         let result = get_result(repo_map, tree_map);
@@ -96,7 +92,7 @@ fn get_result(
                     tree_version: tree_version.to_string(),
                     repo_version: repo_version.to_string(),
                 });
-            };
+            }
         }
     }
 
