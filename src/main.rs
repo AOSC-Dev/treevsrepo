@@ -100,10 +100,8 @@ fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<Tre
                         if all_no_match
                             .iter()
                             .all(|x: &&RepoPackage| x.name != repo_package.name)
-                            && result
-                                .iter()
-                                .position(|x: &TreeVsRepo| x.name == repo_package.name)
-                                .is_none()
+                            && !result
+                                .iter().any(|x: &TreeVsRepo| x.name == repo_package.name)
                         {
                             all_no_match.push(&(*(*repo_package)));
                         }
@@ -122,10 +120,8 @@ fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<Tre
                         if all_no_match
                             .iter()
                             .all(|x: &&RepoPackage| x.name != repo_package.name)
-                            && result
-                                .iter()
-                                .position(|x: &TreeVsRepo| x.name == repo_package.name)
-                                .is_none()
+                            && !result
+                                .iter().any(|x: &TreeVsRepo| x.name == repo_package.name)
                         {
                             all_no_match.push(repo_package);
                         }
@@ -313,7 +309,7 @@ fn test_get_result_5() {
             name: "qaq".to_string(),
             version: "1.0".to_string(),
             arch: "all".to_string(),
-        }
+        },
     ];
     let tree_vec = vec![TreePackage {
         name: "qaq".to_string(),
@@ -357,7 +353,7 @@ fn test_get_result_6() {
             name: "qaq".to_string(),
             version: "1.0".to_string(),
             arch: "all".to_string(),
-        }
+        },
     ];
     let tree_vec = vec![TreePackage {
         name: "qaq".to_string(),
