@@ -23,6 +23,7 @@ struct Args {
     #[clap(short = 'm', long, default_value = DEFAULT_URL)]
     mirror: String,
 }
+
 fn main() {
     env_logger::init();
     let args = Args::parse();
@@ -35,12 +36,12 @@ fn main() {
         vs::result_to_file(result, output, now_env);
     } else {
         println!(
-            "{:<30}{:<30}{:<30}\t\tArch",
-            "Name", "Tree version", "Repo version"
+            "{:<30}{:<30}{:<30}{:<30}",
+            "Name", "Tree version", "Repo version", "Arch"
         );
         for i in result {
             println!(
-                "{:<30}{:<30}{:<30}\t\t{}",
+                "{:<30}{:<30}{:<30}{:<30}",
                 i.name, i.tree_version, i.repo_version, i.arch
             );
         }
