@@ -1,6 +1,6 @@
-use crate::{repo::RepoPackage};
-use std::path::Path;
+use crate::repo::RepoPackage;
 use crate::tree::TreePackage;
+use std::path::Path;
 
 #[derive(Debug, PartialEq)]
 pub struct TreeVsRepo {
@@ -9,7 +9,6 @@ pub struct TreeVsRepo {
     pub tree_version: String,
     pub repo_version: String,
 }
-
 
 pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<TreeVsRepo> {
     let mut result = Vec::new();
@@ -35,7 +34,8 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
                             .iter()
                             .all(|x: &&RepoPackage| x.name != repo_package.name)
                             && !result
-                                .iter().any(|x: &TreeVsRepo| x.name == repo_package.name)
+                                .iter()
+                                .any(|x: &TreeVsRepo| x.name == repo_package.name)
                         {
                             all_no_match.push(&(*(*repo_package)));
                         }
@@ -55,7 +55,8 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
                             .iter()
                             .all(|x: &&RepoPackage| x.name != repo_package.name)
                             && !result
-                                .iter().any(|x: &TreeVsRepo| x.name == repo_package.name)
+                                .iter()
+                                .any(|x: &TreeVsRepo| x.name == repo_package.name)
                         {
                             all_no_match.push(repo_package);
                         }
