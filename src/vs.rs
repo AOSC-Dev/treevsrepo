@@ -1,6 +1,6 @@
 use crate::repo::RepoPackage;
 use crate::tree::TreePackage;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, PartialEq)]
 pub struct TreeVsRepo {
@@ -110,7 +110,7 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
     result
 }
 
-pub fn result_to_file(result: Vec<TreeVsRepo>, output: String, now_env: std::path::PathBuf) {
+pub fn result_to_file(result: Vec<TreeVsRepo>, output: String, now_env: PathBuf) {
     let mut file_vec = Vec::new();
     for i in result {
         if !file_vec.contains(&i.name) {

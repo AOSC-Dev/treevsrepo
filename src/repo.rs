@@ -1,4 +1,8 @@
+use std::time::Duration;
+
 use anyhow::Result;
+use reqwest::Client;
+use tokio::runtime::Builder;
 
 const ARCH_LIST_RETRO: &[&str] = &[
     "i486",
@@ -31,27 +35,33 @@ pub fn get_repo_package_ver_list(
             .map(|x| x.to_string())
             .collect::<Vec<String>>()
     };
-    for i in &arch_list {
-        let entrys = get_list_from_repo(i, mirror)?
-            .split('\n')
-            .map(|x| x.into())
-            .collect::<Vec<String>>();
-        result.extend(handle(entrys));
-    }
+    let runtime = Builder::new_multi_thread().enable_all().build()?;
+    let client = reqwest::Client::new();
+    runtime.block_on(async move {
+        let mut task = Vec::new();
+        for i in &arch_list {
+            task.push(get_list_from_repo(i, mirror, &client));
+        }
+        let results = futures::future::join_all(task).await;
+        for i in results {
+            match i {
+                Ok(res) => {
+                    let entrys = res.split('\n').map(|x| x.into()).collect::<Vec<String>>();
+                    result.extend(handle(entrys));
+                }
+                Err(e) => return Err(e),
+            }
+        }
 
-    Ok(result)
+        Ok(result)
+    })
 }
 
 fn handle(entrys: Vec<String>) -> Vec<RepoPackage> {
     let mut last_index = 0;
     let mut result = Vec::new();
     let mut temp_vec = Vec::new();
-    let mut last_name = entrys
-        .first()
-        .unwrap()
-        .strip_prefix("Package: ")
-        .unwrap()
-        .to_string();
+    let mut last_name = entrys.first().unwrap().strip_prefix("Package: ").unwrap();
     for (index, entry) in entrys.iter().enumerate() {
         if entry.is_empty() && index != entrys.len() - 1 {
             let package_vec = &entrys[last_index..index];
@@ -96,20 +106,19 @@ fn handle(entrys: Vec<String>) -> Vec<RepoPackage> {
     result
 }
 
-fn get_value(package_vec: &[String], value: &str) -> String {
+fn get_value<'a>(package_vec: &'a [String], value: &'a str) -> &'a str {
     let index = package_vec
         .iter()
         .position(|x| x.contains(&format!("{}: ", value)))
         .unwrap();
     let result = package_vec[index]
         .strip_prefix(&format!("{}: ", value))
-        .unwrap()
-        .to_string();
+        .unwrap();
 
     result
 }
 
-fn get_list_from_repo(binary_name: &str, mirror: &str) -> Result<String> {
+async fn get_list_from_repo(binary_name: &str, mirror: &str, client: &Client) -> Result<String> {
     let url = if mirror.ends_with('/') {
         mirror.to_string()
     } else {
@@ -119,7 +128,14 @@ fn get_list_from_repo(binary_name: &str, mirror: &str) -> Result<String> {
         "{}debs-retro/dists/stable/main/binary-{}/Packages",
         url, binary_name
     );
-    let result = reqwest::blocking::get(url)?.error_for_status()?.text()?;
+    let result = client
+        .get(url)
+        .timeout(Duration::from_secs(10))
+        .send()
+        .await?
+        .error_for_status()?
+        .text()
+        .await?;
 
     Ok(result)
 }
