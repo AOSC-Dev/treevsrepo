@@ -156,7 +156,7 @@ fn fail_arch_regex(expr: &str) -> Result<Regex> {
 }
 
 #[test]
-fn test() {
+fn test_fail_arch_regex() {
     let fail_arch = "!(amd64|arm64)";
     let reg = fail_arch_regex(fail_arch).unwrap();
 

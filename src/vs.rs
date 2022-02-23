@@ -95,14 +95,12 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
                     repo_version,
                 })
             } else {
-                for j in repo_not_all_match {
-                    result.push(TreeVsRepo {
-                        name: j.name.to_string(),
-                        arch: "all".to_string(),
-                        tree_version: tree_version.to_string(),
-                        repo_version: j.version.to_string(),
-                    });
-                }
+                result.push(TreeVsRepo {
+                    name: repo_not_all_match[0].name.to_string(),
+                    arch: "all".to_string(),
+                    tree_version: tree_version.to_string(),
+                    repo_version: repo_not_all_match[0].version.to_string(),
+                });
             }
         } else {
             for j in repo_not_all_match {
