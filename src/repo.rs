@@ -84,7 +84,16 @@ fn handle(entrys: Vec<String>) -> Vec<RepoPackage> {
                 ));
             } else {
                 let (temp_last_name, temp_last_version, temp_last_arch) =
-                    temp_vec.last().unwrap().to_owned();
+                    if temp_vec.iter().any(|(_, v, _)| v.contains(":")) {
+                        let filter_vec = temp_vec
+                            .iter()
+                            .filter(|(_, v, _)| v.contains(":"))
+                            .collect::<Vec<_>>();
+
+                        filter_vec.last().unwrap().to_owned().to_owned()
+                    } else {
+                        temp_vec.last().unwrap().to_owned()
+                    };
                 let repo_package = RepoPackage {
                     name: temp_last_name,
                     version: temp_last_version.to_string(),
