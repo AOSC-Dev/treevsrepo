@@ -39,12 +39,12 @@ fn main() {
         vs::result_to_file(result, output, now_env);
     } else {
         println!(
-            "{:<30}{:<30}{:<30}{:<30}",
+            "{:<40}{:<40}{:<40}{:<40}",
             "Name", "Tree version", "Repo version", "Arch"
         );
         for i in result {
             println!(
-                "{:<30}{:<30}{:<30}{:<30}",
+                "{:<40}{:<40}{:<40}{:<40}",
                 i.name, i.tree_version, i.repo_version, i.arch
             );
         }
