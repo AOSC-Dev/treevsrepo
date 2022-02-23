@@ -81,15 +81,29 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
         if is_noarch {
             let repo_index = repo_vec
                 .iter()
-                .position(|x| x.name == i.name && x.arch == "all")
-                .unwrap();
-            let repo_version = repo_vec[repo_index].version.to_string();
-            result.push(TreeVsRepo {
-                name: i.name.to_string(),
-                tree_version,
-                arch: "all".to_string(),
-                repo_version,
-            })
+                .position(|x| x.name == i.name && x.arch == "all");
+            if let Some(repo_index) = repo_index {
+                let repo_version = repo_vec[repo_index].version.to_string();
+                result.push(TreeVsRepo {
+                    name: i.name.to_string(),
+                    tree_version,
+                    arch: "all".to_string(),
+                    repo_version,
+                })
+            } else {
+                let repo_all_match = repo_vec
+                    .iter()
+                    .filter(|x| x.name == i.name && x.arch != "all")
+                    .collect::<Vec<_>>();
+                for j in repo_all_match {
+                    result.push(TreeVsRepo {
+                        name: j.name.to_string(),
+                        arch: j.arch.to_string(),
+                        tree_version: tree_version.to_string(),
+                        repo_version: j.version.to_string(),
+                    });
+                }
+            }
         } else {
             let repo_all_match = repo_vec
                 .iter()
