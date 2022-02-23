@@ -32,18 +32,16 @@ pub fn get_repo_package_ver_list(
     let mut result = Vec::new();
     let arch_list = if let Some(arch_list) = arch_list {
         arch_list
+    } else if is_retro {
+        ARCH_LIST_RETRO
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
     } else {
-        if is_retro {
-            ARCH_LIST_RETRO
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-        } else {
-            ARCH_LIST_MAINLINE
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-        }
+        ARCH_LIST_MAINLINE
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
     };
     let runtime = Builder::new_multi_thread().enable_all().build()?;
     let client = reqwest::Client::new();

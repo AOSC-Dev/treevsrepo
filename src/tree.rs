@@ -107,7 +107,7 @@ fn read_ab_fallback(file: &mut File) -> HashMap<String, String> {
     context
 }
 
-fn handle_context(split_file: &Vec<&str>, context: &mut HashMap<String, String>, key: &str) {
+fn handle_context(split_file: &[&str], context: &mut HashMap<String, String>, key: &str) {
     let key_inner = &format!("{}=", key);
     let key_index = split_file.iter().position(|x| x.starts_with(key_inner));
     if let Some(index) = key_index {
@@ -115,6 +115,6 @@ fn handle_context(split_file: &Vec<&str>, context: &mut HashMap<String, String>,
             .strip_prefix(key_inner)
             .unwrap()
             .replace("\"", "");
-        context.insert(key.to_string(), value.to_string());
+        context.insert(key.to_string(), value);
     }
 }
