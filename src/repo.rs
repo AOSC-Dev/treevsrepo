@@ -15,7 +15,7 @@ const ARCH_LIST_RETRO: &[&str] = &[
     "all",
 ];
 
-const ARCH_LIST_MAINLINE: &[&str] = &["amd64", "aarch64", "ppc64el", "loongson3", "riscv64", "all"];
+const ARCH_LIST_MAINLINE: &[&str] = &["amd64", "arm64", "ppc64el", "loongson3", "riscv64", "all"];
 
 #[derive(Debug, PartialEq)]
 pub struct RepoPackage {

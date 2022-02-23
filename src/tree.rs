@@ -14,30 +14,6 @@ pub struct TreePackage {
     pub is_noarch: bool,
 }
 
-macro_rules! handle_parse {
-    ($name:ident, $result:ident, $spec:ident, $defines:ident) => {
-        let mut is_noarch = false;
-        let mut ver = String::new();
-        if let Some(v) = $spec.get("VER") {
-            ver.push_str(v);
-        }
-        if let Some(rel) = $spec.get("REL") {
-            ver = format!("{}-{}", ver, rel);
-        }
-        if let Some(epoch) = $defines.get("PKGEPOCH") {
-            ver = format!("{}:{}", epoch, ver);
-        }
-        if $defines.get("ABHOST") == Some(&"noarch".to_string()) {
-            is_noarch = true;
-        }
-        $result.push(TreePackage {
-            name: $name,
-            version: ver,
-            is_noarch,
-        });
-    };
-}
-
 pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
     let mut result = Vec::new();
     std::env::set_current_dir(tree)
@@ -77,7 +53,25 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
 
                     read_ab_fallback(&mut defines)
                 });
-            handle_parse!(name, result, spec_parse, defines_parse);
+            let mut is_noarch = false;
+            let mut ver = String::new();
+            if let Some(v) = spec_parse.get("VER") {
+                ver.push_str(v);
+            }
+            if let Some(rel) = spec_parse.get("REL") {
+                ver = format!("{}-{}", ver, rel);
+            }
+            if let Some(epoch) = defines_parse.get("PKGEPOCH") {
+                ver = format!("{}:{}", epoch, ver);
+            }
+            if defines_parse.get("ABHOST") == Some(&"noarch".to_string()) {
+                is_noarch = true;
+            }
+            result.push(TreePackage {
+                name,
+                version: ver,
+                is_noarch,
+            });
         }
     }
 
