@@ -22,6 +22,9 @@ struct Args {
     /// Set mirror.
     #[clap(short = 'm', long, default_value = DEFAULT_URL)]
     mirror: String,
+    /// Set branch (retro/non-retro)
+    #[clap(short = 'r', long)]
+    retro: bool,
 }
 
 fn main() {
@@ -29,7 +32,7 @@ fn main() {
     let args = Args::parse();
     let now_env = std::env::current_dir().expect("Cannot get your env!");
     let arch = args.arch;
-    let repo_map = repo::get_repo_package_ver_list(&args.mirror, arch).unwrap();
+    let repo_map = repo::get_repo_package_ver_list(&args.mirror, arch, args.retro).unwrap();
     let tree_map = tree::get_tree_package_list(Path::new(&args.tree));
     let result = vs::get_result(repo_map, tree_map);
     if let Some(output) = args.output {

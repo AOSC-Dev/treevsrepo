@@ -78,6 +78,10 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
         let tree_index = tree_vec.iter().position(|x| x.name == i.name).unwrap();
         let tree_version = tree_vec[tree_index].version.to_string();
         let is_noarch = tree_vec[tree_index].is_noarch;
+        let repo_not_all_match = repo_vec
+            .iter()
+            .filter(|x| x.name == i.name && x.arch != "all")
+            .collect::<Vec<_>>();
         if is_noarch {
             let repo_index = repo_vec
                 .iter()
@@ -91,25 +95,17 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
                     repo_version,
                 })
             } else {
-                let repo_all_match = repo_vec
-                    .iter()
-                    .filter(|x| x.name == i.name && x.arch != "all")
-                    .collect::<Vec<_>>();
-                for j in repo_all_match {
+                for j in repo_not_all_match {
                     result.push(TreeVsRepo {
                         name: j.name.to_string(),
-                        arch: j.arch.to_string(),
+                        arch: "all".to_string(),
                         tree_version: tree_version.to_string(),
                         repo_version: j.version.to_string(),
                     });
                 }
             }
         } else {
-            let repo_all_match = repo_vec
-                .iter()
-                .filter(|x| x.name == i.name && x.arch != "all")
-                .collect::<Vec<_>>();
-            for j in repo_all_match {
+            for j in repo_not_all_match {
                 result.push(TreeVsRepo {
                     name: j.name.to_string(),
                     arch: j.arch.to_string(),

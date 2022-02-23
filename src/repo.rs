@@ -15,6 +15,8 @@ const ARCH_LIST_RETRO: &[&str] = &[
     "all",
 ];
 
+const ARCH_LIST_MAINLINE: &[&str] = &["amd64", "aarch64", "ppc64el", "loongson3", "riscv64", "all"];
+
 #[derive(Debug, PartialEq)]
 pub struct RepoPackage {
     pub name: String,
@@ -25,15 +27,23 @@ pub struct RepoPackage {
 pub fn get_repo_package_ver_list(
     mirror: &str,
     arch_list: Option<Vec<String>>,
+    is_retro: bool,
 ) -> Result<Vec<RepoPackage>> {
     let mut result = Vec::new();
     let arch_list = if let Some(arch_list) = arch_list {
         arch_list
     } else {
-        ARCH_LIST_RETRO
-            .iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<String>>()
+        if is_retro {
+            ARCH_LIST_RETRO
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>()
+        } else {
+            ARCH_LIST_MAINLINE
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>()
+        }
     };
     let runtime = Builder::new_multi_thread().enable_all().build()?;
     let client = reqwest::Client::new();
@@ -124,9 +134,14 @@ async fn get_list_from_repo(binary_name: &str, mirror: &str, client: &Client) ->
     } else {
         format!("{}/", mirror)
     };
+    let directory_name = if ARCH_LIST_MAINLINE.contains(&binary_name) {
+        "debs"
+    } else {
+        "debs_retro"
+    };
     let url = format!(
-        "{}debs-retro/dists/stable/main/binary-{}/Packages",
-        url, binary_name
+        "{}{}/dists/stable/main/binary-{}/Packages",
+        url, directory_name, binary_name
     );
     let result = client
         .get(url)
