@@ -64,12 +64,20 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
                     }
                 }
                 if all_no_match.iter().all(|x| x.name != repo_package.name) {
-                    result.push(TreeVsRepo {
-                        name: repo_package.name.to_string(),
-                        arch: repo_package.arch.to_string(),
-                        tree_version: tree_package.version.to_string(),
-                        repo_version: repo_package.version.to_string(),
-                    });
+                    let mut push = true;
+                    if let Some(fail_arch) = &tree_package.fail_arch {
+                        if fail_arch.is_match(&repo_package.arch).unwrap() {
+                            push = false;
+                        }
+                    }
+                    if push {
+                        result.push(TreeVsRepo {
+                            name: repo_package.name.to_string(),
+                            arch: repo_package.arch.to_string(),
+                            tree_version: tree_package.version.to_string(),
+                            repo_version: repo_package.version.to_string(),
+                        });
+                    }
                 }
             }
         }
