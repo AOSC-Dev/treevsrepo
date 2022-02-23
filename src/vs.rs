@@ -148,6 +148,7 @@ fn test_get_result_1() {
         name: "qaq".to_string(),
         version: "114514".to_string(),
         is_noarch: true,
+        fail_arch: None,
     }];
 
     assert!(get_result(repo_vec, tree_vec).is_empty());
@@ -171,6 +172,7 @@ fn test_get_result_2() {
         name: "qaq".to_string(),
         version: "1:1.0".to_string(),
         is_noarch: true,
+        fail_arch: None,
     }];
 
     assert_eq!(
@@ -202,6 +204,7 @@ fn test_get_result_3() {
         name: "qaq".to_string(),
         version: "114514".to_string(),
         is_noarch: false,
+        fail_arch: None,
     }];
 
     assert_eq!(
@@ -233,6 +236,7 @@ fn test_get_result_4() {
         name: "qaq".to_string(),
         version: "114514".to_string(),
         is_noarch: false,
+        fail_arch: None,
     }];
 
     assert_eq!(
@@ -277,6 +281,7 @@ fn test_get_result_5() {
         name: "qaq".to_string(),
         version: "114514".to_string(),
         is_noarch: false,
+        fail_arch: None,
     }];
 
     assert_eq!(
@@ -321,6 +326,7 @@ fn test_get_result_6() {
         name: "qaq".to_string(),
         version: "1.0".to_string(),
         is_noarch: true,
+        fail_arch: None,
     }];
 
     assert!(get_result(repo_vec, tree_vec).is_empty())
