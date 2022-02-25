@@ -141,7 +141,10 @@ fn read_ab_fallback(file: &mut File) -> HashMap<String, String> {
     let split_file = file_buf.split('\n').collect::<Vec<_>>();
     handle_context(&split_file, &mut context, "VER");
     handle_context(&split_file, &mut context, "REL");
+    handle_context(&split_file, &mut context, "PKGNAME");
     handle_context(&split_file, &mut context, "PKGEPOCH");
+    handle_context(&split_file, &mut context, "FAIL_ARCH");
+    handle_context(&split_file, &mut context, "ABHOST");
 
     context
 }
