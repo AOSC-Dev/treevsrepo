@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use fancy_regex::Regex;
-use log::warn;
+use log::{warn, info};
 use std::{
     collections::HashMap,
     fs::File,
@@ -43,6 +43,7 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
                     vec![defines]
                 } else {
                     // Try to walkdir group-package. like: 01-virtualbox
+                    info!("Package {} is group package? trying to search group package ...", name);
                     let mut result = Vec::new();
                     for i in WalkDir::new(path)
                         .min_depth(2)
@@ -65,13 +66,13 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
                     result
                 };
             let spec_parse = read_ab_with_apml(&mut spec).unwrap_or({
-                warn!("Package {} Cannot use apml to parse spec file! fallback to read_ab_fallback function!", name);
+                info!("Package {} Cannot use apml to parse spec file! fallback to read_ab_fallback function!", name);
 
                 read_ab_fallback(&mut spec)
             });
             for mut defines in defines_vec {
                 let defines_parse = read_ab_with_apml(&mut defines).unwrap_or({
-                    warn!("Package {} Cannot use apml to parse defines file! fallback to read_ab_fallback function!", name);
+                    info!("Package {} Cannot use apml to parse defines file! fallback to read_ab_fallback function!", name);
 
                     read_ab_fallback(&mut defines)
                 });
@@ -80,7 +81,8 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
                 let name = if let Some(pkgname) = defines_parse.get("PKGNAME") {
                     pkgname
                 } else {
-                    warn!("Package {} defines has no PKGNAME! fallback to directory name ...", name);
+                    info!("Package {} defines has no PKGNAME! fallback to directory name ...", name);
+
                     name
                 };
                 if let Some(v) = spec_parse.get("VER") {
