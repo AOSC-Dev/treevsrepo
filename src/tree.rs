@@ -29,8 +29,8 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
         .into_iter()
         .flatten()
     {
+        let name = entry.file_name().to_str().unwrap();
         if entry.file_type().is_dir() {
-            let name = entry.file_name().to_str().unwrap().to_owned();
             let path = entry.path();
             let mut spec = if let Ok(spec) = std::fs::File::open(path.join("spec")) {
                 spec
@@ -38,54 +38,79 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
                 warn!("Package {} spec does not exist!", name);
                 continue;
             };
-            let mut defines =
+            let defines_vec =
                 if let Ok(defines) = std::fs::File::open(path.join("autobuild/defines")) {
-                    defines
+                    vec![defines]
                 } else {
-                    warn!("Package {} defines does not exist!", name);
-                    continue;
-                };
-            let spec_parse = read_ab_with_apml(&mut spec).unwrap_or(
-                {
-                    warn!("Package {} Cannot use apml to parse spec file! fallback to read_ab_fallback function!", name);
+                    // Try to walkdir group-package. like: 01-virtualbox
+                    let mut result = Vec::new();
+                    for i in WalkDir::new(path)
+                        .min_depth(2)
+                        .max_depth(3)
+                        .into_iter()
+                        .flatten()
+                    {
+                        if i.file_name().to_str() == Some("defines") {
+                            let defines = std::fs::File::open(i.path());
+                            if let Ok(defines) = defines {
+                                result.push(defines);
+                            }
+                        }
+                    }
+                    if result.is_empty() {
+                        warn!("Package {} defines does not exist!", name);
+                        continue;
+                    }
 
-                    read_ab_fallback(&mut spec)
-                });
-            let defines_parse =
-                read_ab_with_apml(&mut defines).unwrap_or({
+                    result
+                };
+            let spec_parse = read_ab_with_apml(&mut spec).unwrap_or({
+                warn!("Package {} Cannot use apml to parse spec file! fallback to read_ab_fallback function!", name);
+
+                read_ab_fallback(&mut spec)
+            });
+            for mut defines in defines_vec {
+                let defines_parse = read_ab_with_apml(&mut defines).unwrap_or({
                     warn!("Package {} Cannot use apml to parse defines file! fallback to read_ab_fallback function!", name);
 
                     read_ab_fallback(&mut defines)
                 });
-            let mut is_noarch = false;
-            let mut ver = String::new();
-            if let Some(v) = spec_parse.get("VER") {
-                ver.push_str(v);
-            } else {
-                warn!("Package {} has no version!", name);
-                continue;
+                let mut is_noarch = false;
+                let mut ver = String::new();
+                let name = if let Some(pkgname) = defines_parse.get("PKGNAME") {
+                    pkgname
+                } else {
+                    warn!("Package {} defines has no PKGNAME! fallback to directory name ...", name);
+                    name
+                };
+                if let Some(v) = spec_parse.get("VER") {
+                    ver.push_str(v);
+                } else {
+                    warn!("Package {} has no version!", name);
+                    continue;
+                }
+                if let Some(rel) = spec_parse.get("REL") {
+                    ver = format!("{}-{}", ver, rel);
+                }
+                if let Some(epoch) = defines_parse.get("PKGEPOCH") {
+                    ver = format!("{}:{}", epoch, ver);
+                }
+                let ver = PkgVersion::try_from(ver.as_str()).unwrap();
+                let fail_arch = if let Some(fail_arch) = defines_parse.get("FAIL_ARCH") {
+                    fail_arch_regex(fail_arch).ok()
+                } else {
+                    None
+                };
+                if defines_parse.get("ABHOST") == Some(&"noarch".to_string()) {
+                    is_noarch = true;
+                }
+                result.push(TreePackage {
+                    name: name.to_string(),
+                    version: ver.to_string(),
+                    is_noarch,
+                    fail_arch,
+                });
             }
-            if let Some(rel) = spec_parse.get("REL") {
-                ver = format!("{}-{}", ver, rel);
-            }
-            if let Some(epoch) = defines_parse.get("PKGEPOCH") {
-                ver = format!("{}:{}", epoch, ver);
-            }
-            let ver = PkgVersion::try_from(ver.as_str()).unwrap();
-            let fail_arch = if let Some(fail_arch) = defines_parse.get("FAIL_ARCH") {
-                fail_arch_regex(fail_arch).ok()
-            } else {
-                None
-            };
-            if defines_parse.get("ABHOST") == Some(&"noarch".to_string()) {
-                is_noarch = true;
-            }
-            result.push(TreePackage {
-                name,
-                version: ver.to_string(),
-                is_noarch,
-                fail_arch,
-            });
         }
     }
 
@@ -96,6 +121,10 @@ fn read_ab_with_apml(file: &mut File) -> Result<HashMap<String, String>> {
     let mut file_buf = String::new();
     file.read_to_string(&mut file_buf)?;
     let mut context = HashMap::new();
+    // Try to set some ab3 flags to reduce the chance of returning errors
+    context.insert("ARCH".to_string(), "".to_string());
+    context.insert("PKGDIR".to_string(), "".to_string());
+    context.insert("SRCDIR".to_string(), "".to_string());
     abbs_meta_apml::parse(&file_buf, &mut context)
         .map_err(|e| anyhow!(e.pretty_print(&file_buf, "File")))?;
 
