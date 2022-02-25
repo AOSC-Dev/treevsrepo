@@ -4,6 +4,8 @@ use anyhow::Result;
 use reqwest::Client;
 use tokio::runtime::Builder;
 
+use crate::pkgversion::PkgVersion;
+
 const ARCH_LIST_RETRO: &[&str] = &[
     "i486",
     "armel",
@@ -66,57 +68,37 @@ pub fn get_repo_package_ver_list(
 }
 
 fn handle(entrys: Vec<String>) -> Vec<RepoPackage> {
-    let mut last_index = 0;
     let mut result = Vec::new();
-    let mut temp_vec = Vec::new();
-    let mut last_name = entrys.first().unwrap().strip_prefix("Package: ").unwrap();
-    for (index, entry) in entrys.iter().enumerate() {
-        if entry.is_empty() && index != entrys.len() - 1 {
-            let package_vec = &entrys[last_index..index];
-            let package_name = get_value(package_vec, "Package");
-            let version = get_value(package_vec, "Version");
-            let arch = get_value(package_vec, "Architecture");
-            if last_name == package_name {
-                temp_vec.push((
-                    package_name.to_string(),
-                    version.to_string(),
-                    arch.to_string(),
-                ));
-            } else {
-                let (temp_last_name, temp_last_version, temp_last_arch) =
-                    if temp_vec.iter().any(|(_, v, _)| v.contains(":")) {
-                        let filter_vec = temp_vec
-                            .iter()
-                            .filter(|(_, v, _)| v.contains(":"))
-                            .collect::<Vec<_>>();
-
-                        filter_vec.last().unwrap().to_owned().to_owned()
-                    } else {
-                        temp_vec.last().unwrap().to_owned()
-                    };
-                let repo_package = RepoPackage {
-                    name: temp_last_name,
-                    version: temp_last_version.to_string(),
-                    arch: temp_last_arch.to_string(),
-                };
-                result.push(repo_package);
-                temp_vec.clear();
-                temp_vec.push((
-                    package_name.to_string(),
-                    version.to_string(),
-                    arch.to_string(),
-                ));
-                last_name = package_name;
-            }
-            last_index = index;
-        } else if index == entrys.len() - 1 {
-            let (name, version, arch) = temp_vec.last().unwrap().to_owned();
-            let repo_package = RepoPackage {
-                name,
-                version,
-                arch,
-            };
-            result.push(repo_package);
+    let entrys = parse_package_file(entrys);
+    let mut pushed_package = Vec::new();
+    for entry in &entrys {
+        let filter_vec = entrys
+            .iter()
+            .filter(|x| x.name == entry.name)
+            .collect::<Vec<_>>();
+        let version_vec = filter_vec
+            .iter()
+            .map(|x| {
+                (
+                    x.name.to_string(),
+                    x.version.to_string(),
+                    x.arch.to_string(),
+                )
+            })
+            .collect::<Vec<_>>();
+        let mut parse_vec = Vec::new();
+        for (name, ver, arch) in version_vec {
+            parse_vec.push((name, PkgVersion::try_from(ver.as_str()).unwrap(), arch));
+        }
+        parse_vec.sort_by(|x, y| x.1.cmp(&y.1));
+        let (last_name, last_version, last_arch) = parse_vec.last().unwrap();
+        if !pushed_package.contains(last_name) {
+            result.push(RepoPackage {
+                name: last_name.to_string(),
+                version: last_version.to_string(),
+                arch: last_arch.to_string(),
+            });
+            pushed_package.push(last_name.to_string());
         }
     }
 
@@ -160,6 +142,28 @@ async fn get_list_from_repo(binary_name: &str, mirror: &str, client: &Client) ->
         .await?;
 
     Ok(result)
+}
+
+fn parse_package_file(entrys: Vec<String>) -> Vec<RepoPackage> {
+    let mut last_index = 0;
+    let mut result = Vec::new();
+    for (index, entry) in entrys.iter().enumerate() {
+        if entry.is_empty() && index != entrys.len() - 1 {
+            let package_vec = &entrys[last_index..index];
+            let package_name = get_value(package_vec, "Package");
+            let version = get_value(package_vec, "Version");
+            let arch = get_value(package_vec, "Architecture");
+            let repo_package = RepoPackage {
+                name: package_name.to_string(),
+                version: version.to_string(),
+                arch: arch.to_string(),
+            };
+            result.push(repo_package);
+            last_index = index;
+        }
+    }
+
+    result
 }
 
 #[test]

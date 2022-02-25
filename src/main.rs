@@ -1,6 +1,7 @@
 use clap::Parser;
 use std::path::Path;
 
+mod pkgversion;
 mod repo;
 mod tree;
 mod vs;

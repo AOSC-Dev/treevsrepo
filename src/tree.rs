@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
-use log::warn;
 use fancy_regex::Regex;
+use log::warn;
 use std::{
     collections::HashMap,
     fs::File,
@@ -8,6 +8,8 @@ use std::{
     path::Path,
 };
 use walkdir::WalkDir;
+
+use crate::pkgversion::PkgVersion;
 
 pub struct TreePackage {
     pub name: String,
@@ -59,6 +61,9 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
             let mut ver = String::new();
             if let Some(v) = spec_parse.get("VER") {
                 ver.push_str(v);
+            } else {
+                warn!("Package {} has no version!", name);
+                continue;
             }
             if let Some(rel) = spec_parse.get("REL") {
                 ver = format!("{}-{}", ver, rel);
@@ -66,6 +71,7 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
             if let Some(epoch) = defines_parse.get("PKGEPOCH") {
                 ver = format!("{}:{}", epoch, ver);
             }
+            let ver = PkgVersion::try_from(ver.as_str()).unwrap();
             let fail_arch = if let Some(fail_arch) = defines_parse.get("FAIL_ARCH") {
                 fail_arch_regex(fail_arch).ok()
             } else {
@@ -76,7 +82,7 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
             }
             result.push(TreePackage {
                 name,
-                version: ver,
+                version: ver.to_string(),
                 is_noarch,
                 fail_arch,
             });
@@ -116,7 +122,7 @@ fn handle_context(split_file: &[&str], context: &mut HashMap<String, String>, ke
         let value = split_file[index]
             .strip_prefix(key_inner)
             .unwrap()
-            .replace("\"", "");
+            .replace('\"', "");
         context.insert(key.to_string(), value);
     }
 }
@@ -129,7 +135,7 @@ fn fail_arch_regex(expr: &str) -> Result<Regex> {
         return Err(anyhow!("Pattern too short."));
     }
     let expr = expr.as_bytes();
-    for (i, c) in expr.into_iter().enumerate() {
+    for (i, c) in expr.iter().enumerate() {
         if i == 0 && c == &b'!' {
             negated = true;
             if expr.get(1) != Some(&b'(') {
