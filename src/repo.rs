@@ -72,34 +72,29 @@ fn handle(entrys: Vec<String>) -> Vec<RepoPackage> {
     let entrys = parse_package_file(entrys);
     let mut pushed_package = Vec::new();
     for entry in &entrys {
+        if pushed_package.contains(&entry.name) {
+            continue;
+        }
         let filter_vec = entrys
             .iter()
             .filter(|x| x.name == entry.name)
             .collect::<Vec<_>>();
-        let version_vec = filter_vec
-            .iter()
-            .map(|x| {
-                (
-                    x.name.to_string(),
-                    x.version.to_string(),
-                    x.arch.to_string(),
-                )
-            })
-            .collect::<Vec<_>>();
         let mut parse_vec = Vec::new();
-        for (name, ver, arch) in version_vec {
-            parse_vec.push((name, PkgVersion::try_from(ver.as_str()).unwrap(), arch));
+        for i in filter_vec {
+            parse_vec.push((
+                i.name.to_string(),
+                PkgVersion::try_from(i.version.as_str()).unwrap(),
+                i.arch.to_string(),
+            ));
         }
         parse_vec.sort_by(|x, y| x.1.cmp(&y.1));
         let (last_name, last_version, last_arch) = parse_vec.last().unwrap();
-        if !pushed_package.contains(last_name) {
-            result.push(RepoPackage {
-                name: last_name.to_string(),
-                version: last_version.to_string(),
-                arch: last_arch.to_string(),
-            });
-            pushed_package.push(last_name.to_string());
-        }
+        result.push(RepoPackage {
+            name: last_name.to_string(),
+            version: last_version.to_string(),
+            arch: last_arch.to_string(),
+        });
+        pushed_package.push(last_name.to_string());
     }
 
     result

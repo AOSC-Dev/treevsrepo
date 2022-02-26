@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use fancy_regex::Regex;
-use log::{warn, info};
+use log::{info, warn};
 use std::{
     collections::HashMap,
     fs::File,
@@ -43,7 +43,10 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
                     vec![defines]
                 } else {
                     // Try to walkdir group-package. like: 01-virtualbox
-                    info!("Package {} is group package? trying to search group package ...", name);
+                    info!(
+                        "Package {} is group package? trying to search group package ...",
+                        name
+                    );
                     let mut result = Vec::new();
                     for i in WalkDir::new(path)
                         .min_depth(2)
@@ -81,7 +84,10 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
                 let name = if let Some(pkgname) = defines_parse.get("PKGNAME") {
                     pkgname
                 } else {
-                    info!("Package {} defines has no PKGNAME! fallback to directory name ...", name);
+                    info!(
+                        "Package {} defines has no PKGNAME! fallback to directory name ...",
+                        name
+                    );
 
                     name
                 };
