@@ -121,7 +121,7 @@ async fn get_list_from_repo(binary_name: &str, mirror: &str, client: &Client) ->
     let directory_name = if ARCH_LIST_MAINLINE.contains(&binary_name) {
         "debs"
     } else {
-        "debs_retro"
+        "debs-retro"
     };
     let url = format!(
         "{}{}/dists/stable/main/binary-{}/Packages",
