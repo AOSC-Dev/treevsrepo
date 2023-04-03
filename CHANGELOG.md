@@ -5,7 +5,88 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.0 (2023-04-03)
+
+### Chore
+
+ - <csr-id-a416b0e68d62c93ad5dcedc4e17325125afca534/> add CHANGELOG
+
+### New Features
+
+ - <csr-id-817dd909cfdba564ef4c56902a07fe2aae166015/> get result output to less; use tabled to draw result
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 2 commits contributed to the release.
+ - 2 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Get result output to less; use tabled to draw result ([`817dd90`](https://github.com/AOSC-Dev/treevsrepo/commit/817dd909cfdba564ef4c56902a07fe2aae166015))
+    - Add CHANGELOG ([`a416b0e`](https://github.com/AOSC-Dev/treevsrepo/commit/a416b0e68d62c93ad5dcedc4e17325125afca534))
+</details>
+
 ## v0.2.0 (2023-04-03)
+
+<csr-id-532647a431e85569c31fe87793f9ed8f5a8005b4/>
+<csr-id-5859c0288f1df3cfdb6d5d555fa2a2f9328540de/>
+<csr-id-4a020dd5bb4374c9d16a3252be976d0c2edb3cf9/>
+<csr-id-1473b69d7ef9938a95a11916faee44bd1e747fe8/>
+<csr-id-deb60b145f0c4a5e7d4e058ed740207350909bb1/>
+<csr-id-14f1708b281afc463022dd7fc35d98a0eb04eacd/>
+<csr-id-2a6f0849062de825abcee9a010ae78dd58a22e8c/>
+<csr-id-0b069d96e3f40410fce19777461ea14f4cb1a484/>
+<csr-id-430e2376fe7f31377a4c951909d6ed7c40415a79/>
+<csr-id-f853b7b61521087961b4ca18bb93a29d4c0c28da/>
+<csr-id-d4f7a57fa37b64059f5468af68d05e9dd0ba4237/>
+<csr-id-c6f2ac7b983a5f61cb10e4cce954229b8e378c57/>
+<csr-id-788e6f48791cf9ea7831479071f56f5ce0b23e48/>
+<csr-id-4c58cca60cd4177a96ab2807134545798b244f1f/>
+<csr-id-37620754f25e7d5f7cebeb4a5b50a241bac0c219/>
+<csr-id-88468ce2c3faea7fe266eb3a4c20a6d0ff8a4577/>
+<csr-id-dc6bf50d7b025880ec605b8d7cf61edcf7cb7a2b/>
+<csr-id-bb0a6110745426c3faca1bc5670a0a254fc39ac9/>
+<csr-id-b76d4306809dacf58646d871ed37248abd8d6d01/>
+<csr-id-981dd7da726192d6ebad3516a6ed71499cc2165f/>
+<csr-id-d028c0221f93ecb9fde197444f49c61815b45445/>
+<csr-id-4828ec7bb1d7e69bdfceddad6c0505211cfc1c02/>
+<csr-id-1d0126c9c793bf8008eae8ebe08d3fc3af96ec2a/>
+<csr-id-5021b022aa8637a5cb41a1c8d03745c6e2c5103e/>
+<csr-id-eb7efe90160921929d76ac4842d3c336aba0342f/>
+<csr-id-8bd29819e585b8623fce9369bc4bb3db8bf60e84/>
+<csr-id-8a44ad7896fd5da024bd1b8f590097d3700480c2/>
+<csr-id-99e52d69e6454fbd3c09c435c64c31b805cf4243/>
+<csr-id-e40de8e8a600ea115958a1a446cd83a783b564eb/>
+<csr-id-1a76f9ec96e3cd6d72474d1727c4c4399c64419a/>
+<csr-id-f3897f3f3de3900385975d632d540f787bee10ec/>
+<csr-id-b44d9525492607e7503aa7cac0b7b6cdc99e8a71/>
+<csr-id-6b922f60ed24bd914a564fa62f34f02e1477816e/>
+<csr-id-a6d04b06bf5a9238207b60da6fb47e1d080266b5/>
+<csr-id-e5850396694e71e262812492a93c84f8668654f6/>
+<csr-id-dcbd0f679341eaf4c04a393b967088e462b191e1/>
+<csr-id-6d76f66768c97a78356ffa1a05892dd067d918f2/>
+<csr-id-f25b3c008b14a7acbb1444cfd85b3739eef15b19/>
+<csr-id-a23c86f18f8eb8681bdb5cb6c5092785ed58387a/>
+<csr-id-636dd9d3269fa403e32bc44721de913e88239f48/>
+<csr-id-5099f1579c2b8f7d976323706beba98bff81e21a/>
+<csr-id-a2ade7b65d1a06ebee13d2483a6e29ae1a6f5a8e/>
+<csr-id-a1f2690c38cb345582e1649aefa325fbc43f2166/>
+<csr-id-0b7d9f3f5397046a0d4ef2ff3dbbd8bd7402823b/>
+<csr-id-736bf6a61c486fda39d65969eebde16593356b04/>
+<csr-id-944afc26d1fa5f6a9c225397099c317f8e8956d9/>
+<csr-id-205fa5376c189d2fcd1b0f1343821d4f463fb3fd/>
+<csr-id-3e658e90c3238d534d19c6871b722b8decea9df4/>
+<csr-id-fea0bf59681dd3842fe0c05ee12e4eaba9f31b52/>
+<csr-id-23ff6ea384fe706e709c9bf7b43d937450cbdc12/>
+<csr-id-6d1c4b8ebe602bce492a0aaebe2c2d91e06c4840/>
 
 ### New Features
 
@@ -79,7 +160,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 55 commits contributed to the release over the course of 413 calendar days.
+ - 56 commits contributed to the release over the course of 413 calendar days.
  - 52 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
@@ -90,6 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Bump treevsrepo v0.2.0 ([`b822e54`](https://github.com/AOSC-Dev/treevsrepo/commit/b822e54feeffcb88874d7ade7abad8dbcc77c173))
     - Use cargo fmt to format code ([`6d1c4b8`](https://github.com/AOSC-Dev/treevsrepo/commit/6d1c4b8ebe602bce492a0aaebe2c2d91e06c4840))
     - Use debcontrol to parse repo Release file ([`23ff6ea`](https://github.com/AOSC-Dev/treevsrepo/commit/23ff6ea384fe706e709c9bf7b43d937450cbdc12))
     - Add mips64r6el to list of mainline architectures ([`532647a`](https://github.com/AOSC-Dev/treevsrepo/commit/532647a431e85569c31fe87793f9ed8f5a8005b4))
