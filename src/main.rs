@@ -52,13 +52,18 @@ fn main() {
 
         let mut p = Command::new("less");
         p.arg("-R").arg("-c").arg("-S").env("LESSCHARSET", "UTF-8");
-        let pager_process = p
+        let mut pager_process = p
             .stdin(std::process::Stdio::piped())
             .spawn()
             .expect("Can not get less stdin!");
 
-        let mut stdin = pager_process.stdin.expect("Can not get less stdin!");
+        pager_process
+            .stdin
+            .as_mut()
+            .expect("Can not get less stdin!")
+            .write_all(format!("{table}").as_bytes())
+            .unwrap();
 
-        let _ = write!(stdin, "{table}");
+        let _ = pager_process.wait();
     }
 }
