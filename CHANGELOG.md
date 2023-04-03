@@ -5,7 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.1 (2023-04-03)
+
+### Bug Fixes
+
+ - <csr-id-1a3df38c186fcbd93feb6724e646c3c7dc575c18/> wait less to exit
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 1 commit contributed to the release.
+ - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Wait less to exit ([`1a3df38`](https://github.com/AOSC-Dev/treevsrepo/commit/1a3df38c186fcbd93feb6724e646c3c7dc575c18))
+</details>
+
 ## v0.3.0 (2023-04-03)
+
+<csr-id-a416b0e68d62c93ad5dcedc4e17325125afca534/>
 
 ### Chore
 
@@ -19,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 2 commits contributed to the release.
+ - 3 commits contributed to the release.
  - 2 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
@@ -30,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Bump treevsrepo v0.3.0 ([`dcb6ab5`](https://github.com/AOSC-Dev/treevsrepo/commit/dcb6ab5c69e3fdc55877cc20c783adff5a94c3d8))
     - Get result output to less; use tabled to draw result ([`817dd90`](https://github.com/AOSC-Dev/treevsrepo/commit/817dd909cfdba564ef4c56902a07fe2aae166015))
     - Add CHANGELOG ([`a416b0e`](https://github.com/AOSC-Dev/treevsrepo/commit/a416b0e68d62c93ad5dcedc4e17325125afca534))
 </details>
