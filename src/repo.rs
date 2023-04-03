@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use debcontrol::Paragraph;
 use reqwest::Client;
 use tokio::runtime::Builder;
@@ -18,7 +18,15 @@ const ARCH_LIST_RETRO: &[&str] = &[
     "all",
 ];
 
-const ARCH_LIST_MAINLINE: &[&str] = &["amd64", "arm64", "ppc64el", "loongson3", "mips64r6el", "riscv64", "all"];
+const ARCH_LIST_MAINLINE: &[&str] = &[
+    "amd64",
+    "arm64",
+    "ppc64el",
+    "loongson3",
+    "mips64r6el",
+    "riscv64",
+    "all",
+];
 
 #[derive(Debug, PartialEq)]
 pub struct RepoPackage {
@@ -131,9 +139,24 @@ async fn get_list_from_repo(binary_name: &str, mirror: &str, client: &Client) ->
 fn parse_package_file(entrys: Vec<Paragraph>) -> Vec<RepoPackage> {
     let mut result = Vec::new();
     for entry in entrys {
-        let package_name = &entry.fields.iter().find(|x| x.name == "Package").unwrap().value;
-        let version = &entry.fields.iter().find(|x| x.name == "Version").unwrap().value;
-        let arch = &entry.fields.iter().find(|x| x.name =="Architecture").unwrap().value;
+        let package_name = &entry
+            .fields
+            .iter()
+            .find(|x| x.name == "Package")
+            .unwrap()
+            .value;
+        let version = &entry
+            .fields
+            .iter()
+            .find(|x| x.name == "Version")
+            .unwrap()
+            .value;
+        let arch = &entry
+            .fields
+            .iter()
+            .find(|x| x.name == "Architecture")
+            .unwrap()
+            .value;
         let repo_package = RepoPackage {
             name: package_name.to_string(),
             version: version.to_string(),
