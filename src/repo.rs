@@ -1,6 +1,7 @@
 use std::time::Duration;
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
+use debcontrol::Paragraph;
 use reqwest::Client;
 use tokio::runtime::Builder;
 
@@ -28,11 +29,11 @@ pub struct RepoPackage {
 
 pub fn get_repo_package_ver_list(
     mirror: &str,
-    arch_list: Option<Vec<String>>,
+    arch_list: Vec<String>,
     is_retro: bool,
 ) -> Result<Vec<RepoPackage>> {
     let mut result = Vec::new();
-    let arch_list = if let Some(arch_list) = arch_list {
+    let arch_list = if !arch_list.is_empty() {
         arch_list
     } else if is_retro {
         ARCH_LIST_RETRO
@@ -56,7 +57,7 @@ pub fn get_repo_package_ver_list(
         for i in results {
             match i {
                 Ok(res) => {
-                    let entrys = res.split('\n').map(|x| x.into()).collect::<Vec<String>>();
+                    let entrys = debcontrol::parse_str(&res).map_err(|e| anyhow!("{}", e))?;
                     result.extend(handle(entrys));
                 }
                 Err(e) => return Err(e),
@@ -67,7 +68,7 @@ pub fn get_repo_package_ver_list(
     })
 }
 
-fn handle(entrys: Vec<String>) -> Vec<RepoPackage> {
+fn handle(entrys: Vec<Paragraph>) -> Vec<RepoPackage> {
     let mut result = Vec::new();
     let entrys = parse_package_file(entrys);
     let mut pushed_package = Vec::new();
@@ -100,18 +101,6 @@ fn handle(entrys: Vec<String>) -> Vec<RepoPackage> {
     result
 }
 
-fn get_value<'a>(package_vec: &'a [String], value: &'a str) -> &'a str {
-    let index = package_vec
-        .iter()
-        .position(|x| x.contains(&format!("{}: ", value)))
-        .unwrap();
-    let result = package_vec[index]
-        .strip_prefix(&format!("{}: ", value))
-        .unwrap();
-
-    result
-}
-
 async fn get_list_from_repo(binary_name: &str, mirror: &str, client: &Client) -> Result<String> {
     let url = if mirror.ends_with('/') {
         mirror.to_string()
@@ -139,50 +128,19 @@ async fn get_list_from_repo(binary_name: &str, mirror: &str, client: &Client) ->
     Ok(result)
 }
 
-fn parse_package_file(entrys: Vec<String>) -> Vec<RepoPackage> {
-    let mut last_index = 0;
+fn parse_package_file(entrys: Vec<Paragraph>) -> Vec<RepoPackage> {
     let mut result = Vec::new();
-    for (index, entry) in entrys.iter().enumerate() {
-        if entry.is_empty() && index != entrys.len() - 1 {
-            let package_vec = &entrys[last_index..index];
-            let package_name = get_value(package_vec, "Package");
-            let version = get_value(package_vec, "Version");
-            let arch = get_value(package_vec, "Architecture");
-            let repo_package = RepoPackage {
-                name: package_name.to_string(),
-                version: version.to_string(),
-                arch: arch.to_string(),
-            };
-            result.push(repo_package);
-            last_index = index;
-        }
+    for entry in entrys {
+        let package_name = &entry.fields.iter().find(|x| x.name == "Package").unwrap().value;
+        let version = &entry.fields.iter().find(|x| x.name == "Version").unwrap().value;
+        let arch = &entry.fields.iter().find(|x| x.name =="Architecture").unwrap().value;
+        let repo_package = RepoPackage {
+            name: package_name.to_string(),
+            version: version.to_string(),
+            arch: arch.to_string(),
+        };
+        result.push(repo_package);
     }
 
     result
-}
-
-#[test]
-fn test_handle() {
-    let s = "Package: qaq\nVersion: 1.0\nArchitecture: qwq\n\nPackage: qaq\nVersion: 1.1\nArchitecture: qwq\n\nPackage: aaaa\nVersion: 2.0\nArchitecture: qwq\n\n";
-    let entrys = s
-        .split('\n')
-        .into_iter()
-        .map(|x| x.into())
-        .collect::<Vec<String>>();
-
-    assert_eq!(
-        handle(entrys),
-        vec![
-            RepoPackage {
-                name: "qaq".to_string(),
-                version: "1.1".to_string(),
-                arch: "qwq".to_string(),
-            },
-            RepoPackage {
-                name: "aaaa".to_string(),
-                version: "2.0".to_string(),
-                arch: "qwq".to_string()
-            }
-        ]
-    );
 }

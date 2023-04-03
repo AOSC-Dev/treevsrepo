@@ -18,8 +18,8 @@ struct Args {
     #[clap(short = 'o', long, requires = "arch")]
     output: Option<String>,
     /// Set search arch.
-    #[clap(short = 'a', long, min_values = 1)]
-    arch: Option<Vec<String>>,
+    #[clap(short = 'a', long)]
+    arch: Vec<String>,
     /// Set mirror.
     #[clap(short = 'm', long, default_value = DEFAULT_URL)]
     mirror: String,
