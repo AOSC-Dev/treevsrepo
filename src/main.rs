@@ -1,5 +1,7 @@
 use clap::Parser;
-use std::path::Path;
+use std::io::Write;
+use std::{path::Path, process::Command};
+use tabled::{object::Segment, Alignment, Modify, Style, Table, Width};
 
 mod pkgversion;
 mod repo;
@@ -36,18 +38,27 @@ fn main() {
     let repo_map = repo::get_repo_package_ver_list(&args.mirror, arch, args.retro).unwrap();
     let tree_map = tree::get_tree_package_list(Path::new(&args.tree));
     let result = vs::get_result(repo_map, tree_map);
+
     if let Some(output) = args.output {
         vs::result_to_file(result, output, now_env);
     } else {
-        println!(
-            "{:<40}{:<40}{:<40}{:<40}",
-            "Name", "Tree version", "Repo version", "Arch"
-        );
-        for i in result {
-            println!(
-                "{:<40}{:<40}{:<40}{:<40}",
-                i.name, i.tree_version, i.repo_version, i.arch
-            );
-        }
+        let mut table = Table::new(result);
+
+        table
+            .with(Modify::new(Segment::all()).with(Alignment::left()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(30)))
+            .with(Modify::new(Segment::all()).with(|s: &str| format!(" {s} ")))
+            .with(Style::psql());
+
+        let mut p = Command::new("less");
+        p.arg("-R").arg("-c").arg("-S").env("LESSCHARSET", "UTF-8");
+        let pager_process = p
+            .stdin(std::process::Stdio::piped())
+            .spawn()
+            .expect("Can not get less stdin!");
+
+        let mut stdin = pager_process.stdin.expect("Can not get less stdin!");
+
+        let _ = write!(stdin, "{table}");
     }
 }

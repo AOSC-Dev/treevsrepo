@@ -1,8 +1,10 @@
+use tabled::Tabled;
+
 use crate::repo::RepoPackage;
 use crate::tree::TreePackage;
 use std::path::{Path, PathBuf};
 
-#[derive(Debug, PartialEq)]
+#[derive(Tabled, Debug, PartialEq)]
 pub struct TreeVsRepo {
     pub name: String,
     pub arch: String,
