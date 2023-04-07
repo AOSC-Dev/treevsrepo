@@ -65,8 +65,8 @@ pub fn get_repo_package_ver_list(
         for i in results {
             match i {
                 Ok(res) => {
-                    let entrys = debcontrol::parse_str(&res).map_err(|e| anyhow!("{}", e))?;
-                    result.extend(handle(entrys));
+                    let entries = debcontrol::parse_str(&res).map_err(|e| anyhow!("{}", e))?;
+                    result.extend(handle(entries));
                 }
                 Err(e) => return Err(e),
             }
@@ -76,15 +76,15 @@ pub fn get_repo_package_ver_list(
     })
 }
 
-fn handle(entrys: Vec<Paragraph>) -> Vec<RepoPackage> {
+fn handle(entries: Vec<Paragraph>) -> Vec<RepoPackage> {
     let mut result = Vec::new();
-    let entrys = parse_package_file(entrys);
+    let entries = parse_package_file(entries);
     let mut pushed_package = Vec::new();
-    for entry in &entrys {
+    for entry in &entries {
         if pushed_package.contains(&entry.name) {
             continue;
         }
-        let filter_vec = entrys
+        let filter_vec = entries
             .iter()
             .filter(|x| x.name == entry.name)
             .collect::<Vec<_>>();
@@ -136,9 +136,9 @@ async fn get_list_from_repo(binary_name: &str, mirror: &str, client: &Client) ->
     Ok(result)
 }
 
-fn parse_package_file(entrys: Vec<Paragraph>) -> Vec<RepoPackage> {
+fn parse_package_file(entries: Vec<Paragraph>) -> Vec<RepoPackage> {
     let mut result = Vec::new();
-    for entry in entrys {
+    for entry in entries {
         let package_name = &entry
             .fields
             .iter()
