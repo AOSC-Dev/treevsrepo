@@ -57,12 +57,11 @@ fn main() {
             .spawn()
             .expect("Can not get less stdin!");
 
-        pager_process
+        let _ = pager_process
             .stdin
             .as_mut()
             .expect("Can not get less stdin!")
-            .write_all(format!("{table}").as_bytes())
-            .unwrap();
+            .write_all(format!("{table}").as_bytes());
 
         let _ = pager_process.wait();
     }
