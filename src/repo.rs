@@ -56,24 +56,28 @@ pub fn get_repo_package_ver_list(
     };
     let runtime = Builder::new_multi_thread().enable_all().build()?;
     let client = reqwest::Client::new();
-    runtime.block_on(async move {
+
+    let results = runtime.block_on(async move {
         let mut task = Vec::new();
         for i in &arch_list {
             task.push(get_list_from_repo(i, mirror, &client));
         }
         let results = futures::future::join_all(task).await;
-        for i in results {
-            match i {
-                Ok(res) => {
-                    let entries = debcontrol::parse_str(&res).map_err(|e| anyhow!("{}", e))?;
-                    result.extend(handle(entries));
-                }
-                Err(e) => return Err(e),
-            }
-        }
 
-        Ok(result)
-    })
+        results
+    });
+
+    for i in results {
+        match i {
+            Ok(res) => {
+                let entries = debcontrol::parse_str(&res).map_err(|e| anyhow!("{}", e))?;
+                result.extend(handle(entries));
+            }
+            Err(e) => return Err(e),
+        }
+    }
+
+    Ok(result)
 }
 
 fn handle(entries: Vec<Paragraph>) -> Vec<RepoPackage> {
