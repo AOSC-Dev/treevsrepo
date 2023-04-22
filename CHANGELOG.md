@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.2 (2023-04-22)
+
+### Chore
+
+ - <csr-id-479c5e6e71c405a1172f59b2550de104a99f1a98/> update all deps
+
+### Bug Fixes
+
+ - <csr-id-0e461dd50329d7e2d1a413598df0034e83ed6a84/> the page turn is not completed will panic (Broken pipe)
+ - <csr-id-8be6a24b78d01e1094e81b8c68e33f3be3bfc770/> correct typos in src/repo.rs
+
+### Other
+
+ - <csr-id-e588a4cb8d1f156c39de0eb0013d5cf38edb078f/> add description, usage, and install/build directions
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 4 commits contributed to the release over the course of 15 calendar days.
+ - 19 days passed between releases.
+ - 4 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Update all deps ([`479c5e6`](https://github.com/AOSC-Dev/treevsrepo/commit/479c5e6e71c405a1172f59b2550de104a99f1a98))
+    - The page turn is not completed will panic (Broken pipe) ([`0e461dd`](https://github.com/AOSC-Dev/treevsrepo/commit/0e461dd50329d7e2d1a413598df0034e83ed6a84))
+    - Add description, usage, and install/build directions ([`e588a4c`](https://github.com/AOSC-Dev/treevsrepo/commit/e588a4cb8d1f156c39de0eb0013d5cf38edb078f))
+    - Correct typos in src/repo.rs ([`8be6a24`](https://github.com/AOSC-Dev/treevsrepo/commit/8be6a24b78d01e1094e81b8c68e33f3be3bfc770))
+</details>
+
 ## v0.3.1 (2023-04-03)
 
 ### Bug Fixes
@@ -15,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 1 commit contributed to the release.
+ - 2 commits contributed to the release.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
@@ -26,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Bump treevsrepo v0.3.1 ([`7445709`](https://github.com/AOSC-Dev/treevsrepo/commit/74457093d9de13356b16d6ec47f6df4f53d912ac))
     - Wait less to exit ([`1a3df38`](https://github.com/AOSC-Dev/treevsrepo/commit/1a3df38c186fcbd93feb6724e646c3c7dc575c18))
 </details>
 
