@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use fancy_regex::Regex;
-use log::{info, warn};
+use log::{info, warn, trace};
 use std::{
     collections::HashMap,
     fs::File,
@@ -69,13 +69,13 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
                     result
                 };
             let spec_parse = read_ab_with_apml(&mut spec).unwrap_or({
-                info!("Package {} Cannot use apml to parse spec file! fallback to read_ab_fallback function!", name);
+                trace!("Package {} Cannot use apml to parse spec file! fallback to read_ab_fallback function!", name);
 
                 read_ab_fallback(&mut spec)
             });
             for mut defines in defines_vec {
                 let defines_parse = read_ab_with_apml(&mut defines).unwrap_or({
-                    info!("Package {} Cannot use apml to parse defines file! fallback to read_ab_fallback function!", name);
+                    trace!("Package {} Cannot use apml to parse defines file! fallback to read_ab_fallback function!", name);
 
                     read_ab_fallback(&mut defines)
                 });
