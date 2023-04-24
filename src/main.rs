@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{Parser, ArgAction};
 use std::io::Write;
 use std::{path::Path, process::Command};
 use tabled::{object::Segment, Alignment, Modify, Style, Table, Width};
@@ -14,16 +14,16 @@ const DEFAULT_URL: &str = "https://repo.aosc.io";
 #[clap(about, version, author)]
 struct Args {
     /// Set tree directory. e.g: /home/saki/aosc-os-abbs
-    #[clap(short = 't', long)]
+    #[clap(short, long)]
     tree: String,
     /// Output result to file.
-    #[clap(short = 'o', long, requires = "arch")]
+    #[clap(short, long, requires = "arch")]
     output: Option<String>,
     /// Set search arch.
-    #[clap(short = 'a', long)]
+    #[clap(short, long, action = ArgAction::Append, num_args = 1..)]
     arch: Vec<String>,
     /// Set mirror.
-    #[clap(short = 'm', long, default_value = DEFAULT_URL)]
+    #[clap(short, long, default_value = DEFAULT_URL)]
     mirror: String,
     /// Set branch (retro/non-retro)
     #[clap(short = 'r', long)]
