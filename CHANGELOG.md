@@ -5,7 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.3 (2023-04-24)
+
+### Chore
+
+ - <csr-id-dd9c42707339b0d773c09a150fbb7634b7273af1/> update all deps
+
+### New Features
+
+ - <csr-id-bf81f8bb856b7f82ffaae2db9c016acf26f0045d/> use log::trace! to log apml fallback split parse infomation
+
+### Bug Fixes
+
+ - <csr-id-bc608d5319330b5bfa7be487ac5e378c2dc53ddf/> --arch can not set multi argument
+
+### Refactor
+
+ - <csr-id-e85f7d5534ba0dbb167d5b4f5db17f639705c0e9/> do not always to string in get_repo_package_ver_list
+ - <csr-id-0b2f7a67750379910bcd56dbaec04370fde5b689/> do not block on non-async step
+
+### Style
+
+ - <csr-id-6a47b50d14a3a55ccfbf726378f4bdaf08137748/> use cargo clippy to lint code
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 6 commits contributed to the release over the course of 1 calendar day.
+ - 1 day passed between releases.
+ - 6 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Use cargo clippy to lint code ([`6a47b50`](https://github.com/AOSC-Dev/treevsrepo/commit/6a47b50d14a3a55ccfbf726378f4bdaf08137748))
+    - Update all deps ([`dd9c427`](https://github.com/AOSC-Dev/treevsrepo/commit/dd9c42707339b0d773c09a150fbb7634b7273af1))
+    - --arch can not set multi argument ([`bc608d5`](https://github.com/AOSC-Dev/treevsrepo/commit/bc608d5319330b5bfa7be487ac5e378c2dc53ddf))
+    - Use log::trace! to log apml fallback split parse infomation ([`bf81f8b`](https://github.com/AOSC-Dev/treevsrepo/commit/bf81f8bb856b7f82ffaae2db9c016acf26f0045d))
+    - Do not always to string in get_repo_package_ver_list ([`e85f7d5`](https://github.com/AOSC-Dev/treevsrepo/commit/e85f7d5534ba0dbb167d5b4f5db17f639705c0e9))
+    - Do not block on non-async step ([`0b2f7a6`](https://github.com/AOSC-Dev/treevsrepo/commit/0b2f7a67750379910bcd56dbaec04370fde5b689))
+</details>
+
 ## v0.3.2 (2023-04-22)
+
+<csr-id-479c5e6e71c405a1172f59b2550de104a99f1a98/>
+<csr-id-e588a4cb8d1f156c39de0eb0013d5cf38edb078f/>
 
 ### Chore
 
@@ -24,7 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 4 commits contributed to the release over the course of 15 calendar days.
+ - 5 commits contributed to the release over the course of 15 calendar days.
  - 19 days passed between releases.
  - 4 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -36,6 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Bump treevsrepo v0.3.2 ([`7f15917`](https://github.com/AOSC-Dev/treevsrepo/commit/7f15917b316d876dd4745026cd7d5278fea8b3be))
     - Update all deps ([`479c5e6`](https://github.com/AOSC-Dev/treevsrepo/commit/479c5e6e71c405a1172f59b2550de104a99f1a98))
     - The page turn is not completed will panic (Broken pipe) ([`0e461dd`](https://github.com/AOSC-Dev/treevsrepo/commit/0e461dd50329d7e2d1a413598df0034e83ed6a84))
     - Add description, usage, and install/build directions ([`e588a4c`](https://github.com/AOSC-Dev/treevsrepo/commit/e588a4cb8d1f156c39de0eb0013d5cf38edb078f))
