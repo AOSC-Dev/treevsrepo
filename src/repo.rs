@@ -57,9 +57,9 @@ pub fn get_repo_package_ver_list(
         for i in &arch_list {
             task.push(get_list_from_repo(i, mirror, &client));
         }
-        let results = futures::future::join_all(task).await;
+        
 
-        results
+        futures::future::join_all(task).await
     });
 
     for i in results {

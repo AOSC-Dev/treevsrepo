@@ -206,7 +206,7 @@ fn test_fail_arch_regex() {
     let fail_arch = "!(amd64|arm64)";
     let reg = fail_arch_regex(fail_arch).unwrap();
 
-    assert_eq!(reg.is_match("amd64").unwrap(), false);
-    assert_eq!(reg.is_match("arm64").unwrap(), false);
-    assert_eq!(reg.is_match("ppc64el").unwrap(), true);
+    assert!(!reg.is_match("amd64").unwrap());
+    assert!(!reg.is_match("arm64").unwrap());
+    assert!(reg.is_match("ppc64el").unwrap());
 }
