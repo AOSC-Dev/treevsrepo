@@ -1,7 +1,9 @@
 use clap::{Parser, ArgAction};
+use tabled::Table;
+use tabled::settings::{Modify, Alignment, Width, Style, Format};
+use tabled::settings::object::Segment;
 use std::io::Write;
 use std::{path::Path, process::Command};
-use tabled::{object::Segment, Alignment, Modify, Style, Table, Width};
 
 mod pkgversion;
 mod repo;
@@ -47,8 +49,8 @@ fn main() {
         table
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Modify::new(Segment::all()).with(Width::wrap(30)))
-            .with(Modify::new(Segment::all()).with(|s: &str| format!(" {s} ")))
-            .with(Style::psql());
+            .with(Style::psql())
+            .with(Modify::new(Segment::all()).with(Format::content(|s| format!(" {s} "))));
 
         let mut p = Command::new("less");
         p.arg("-R").arg("-c").arg("-S").env("LESSCHARSET", "UTF-8");
