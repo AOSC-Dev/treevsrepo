@@ -5,7 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.4 (2023-10-05)
+
+### Chore
+
+ - <csr-id-cad312b4b2e9e83820bd28b452f7680ea0c53a0a/> update all deps
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 1 commit contributed to the release.
+ - 163 days passed between releases.
+ - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Update all deps ([`cad312b`](https://github.com/AOSC-Dev/treevsrepo/commit/cad312b4b2e9e83820bd28b452f7680ea0c53a0a))
+</details>
+
 ## v0.3.3 (2023-04-24)
+
+<csr-id-dd9c42707339b0d773c09a150fbb7634b7273af1/>
+<csr-id-e85f7d5534ba0dbb167d5b4f5db17f639705c0e9/>
+<csr-id-0b2f7a67750379910bcd56dbaec04370fde5b689/>
+<csr-id-6a47b50d14a3a55ccfbf726378f4bdaf08137748/>
 
 ### Chore
 
@@ -32,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 6 commits contributed to the release over the course of 1 calendar day.
+ - 7 commits contributed to the release over the course of 1 calendar day.
  - 1 day passed between releases.
  - 6 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -44,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Bump treevsrepo v0.3.3 ([`e88f80b`](https://github.com/AOSC-Dev/treevsrepo/commit/e88f80b27a9be7f53ad35fc668665a5de7691835))
     - Use cargo clippy to lint code ([`6a47b50`](https://github.com/AOSC-Dev/treevsrepo/commit/6a47b50d14a3a55ccfbf726378f4bdaf08137748))
     - Update all deps ([`dd9c427`](https://github.com/AOSC-Dev/treevsrepo/commit/dd9c42707339b0d773c09a150fbb7634b7273af1))
     - --arch can not set multi argument ([`bc608d5`](https://github.com/AOSC-Dev/treevsrepo/commit/bc608d5319330b5bfa7be487ac5e378c2dc53ddf))

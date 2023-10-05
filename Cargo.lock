@@ -1254,7 +1254,7 @@ dependencies = [
 
 [[package]]
 name = "treevsrepo"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
  "abbs-meta-apml",
  "anyhow",
