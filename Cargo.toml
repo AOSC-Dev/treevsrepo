@@ -10,7 +10,7 @@ walkdir = "2.3"
 anyhow = "1.0"
 reqwest = {version = "0.11", features = ["blocking"] }
 clap = { version = "4.2", features = ["derive"] }
-abbs-meta-apml = { git = "https://github.com/AOSC-Dev/abbs-meta-rs", package = "abbs-meta-apml", rev = "7e6d9b719f2cfaf4dd39550b6cf8674dc7976c63" }
+abbs-meta-apml = { git = "https://github.com/AOSC-Dev/abbs-meta-rs", package = "abbs-meta-apml", rev = "4a592937b44e8bb93103edd34eff384169a3248a" }
 log = "0.4"
 env_logger = "0.10"
 tokio = { version = "1.17", features = ["rt-multi-thread", "rt", "time"] }
