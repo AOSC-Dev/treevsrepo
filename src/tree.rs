@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use fancy_regex::Regex;
-use log::{info, warn, trace};
+use log::{info, trace, warn};
 use std::{
     collections::HashMap,
     fs::File,
@@ -133,8 +133,10 @@ fn read_ab_with_apml(file: &mut File) -> Result<HashMap<String, String>> {
     context.insert("ARCH".to_string(), "".to_string());
     context.insert("PKGDIR".to_string(), "".to_string());
     context.insert("SRCDIR".to_string(), "".to_string());
-    abbs_meta_apml::parse(&file_buf, &mut context)
-        .map_err(|e| anyhow!(e.pretty_print(&file_buf, "File")))?;
+    abbs_meta_apml::parse(&file_buf, &mut context).map_err(|e| {
+        let e: Vec<String> = e.iter().map(|e| e.to_string()).collect();
+        anyhow!(e.join(": "))
+    })?;
 
     Ok(context)
 }
