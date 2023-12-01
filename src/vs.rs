@@ -72,6 +72,15 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
                             push = false;
                         }
                     }
+                    // Since there are duplicate tree packages (e.g. mesa and
+                    // mesa-amber), do not push if there is a matching package
+                    // from tree_vec.
+                    if tree_vec
+                        .iter()
+                        .any(|x| x.name == repo_package.name && x.version == repo_package.version)
+                    {
+                        push = false;
+                    }
                     if push {
                         result.push(TreeVsRepo {
                             name: repo_package.name.to_string(),
@@ -336,6 +345,31 @@ fn test_get_result_6() {
         is_noarch: true,
         fail_arch: None,
     }];
+
+    assert!(get_result(repo_vec, tree_vec).is_empty())
+}
+
+#[test]
+fn test_get_result_7() {
+    let repo_vec = vec![RepoPackage {
+        name: "qaq".to_string(),
+        version: "1.0".to_string(),
+        arch: "all".to_string(),
+    }];
+    let tree_vec = vec![
+        TreePackage {
+            name: "qaq".to_string(),
+            version: "1.0".to_string(),
+            is_noarch: true,
+            fail_arch: None,
+        },
+        TreePackage {
+            name: "qaq".to_string(),
+            version: "0.1".to_string(),
+            is_noarch: true,
+            fail_arch: None,
+        },
+    ];
 
     assert!(get_result(repo_vec, tree_vec).is_empty())
 }
