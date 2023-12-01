@@ -1,9 +1,9 @@
-use clap::{Parser, ArgAction};
-use tabled::Table;
-use tabled::settings::{Modify, Alignment, Width, Style, Format};
-use tabled::settings::object::Segment;
+use clap::{ArgAction, Parser};
 use std::io::Write;
 use std::{path::Path, process::Command};
+use tabled::settings::object::Segment;
+use tabled::settings::{Alignment, Format, Modify, Style, Width};
+use tabled::Table;
 
 mod pkgversion;
 mod repo;
@@ -30,6 +30,9 @@ struct Args {
     /// Set branch (retro/non-retro)
     #[clap(short = 'r', long)]
     retro: bool,
+    /// Set topic (e.g. stable)
+    #[clap(short = 't', long, default_value = "stable")]
+    topic: String,
 }
 
 fn main() {
@@ -37,7 +40,8 @@ fn main() {
     let args = Args::parse();
     let now_env = std::env::current_dir().expect("Cannot get your env!");
     let arch = args.arch;
-    let repo_map = repo::get_repo_package_ver_list(&args.mirror, arch, args.retro).unwrap();
+    let repo_map =
+        repo::get_repo_package_ver_list(&args.mirror, &args.topic, arch, args.retro).unwrap();
     let tree_map = tree::get_tree_package_list(Path::new(&args.tree));
     let result = vs::get_result(repo_map, tree_map);
 

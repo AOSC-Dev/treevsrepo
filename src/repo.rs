@@ -37,6 +37,7 @@ pub struct RepoPackage {
 
 pub fn get_repo_package_ver_list(
     mirror: &str,
+    topic: &str,
     arch_list: Vec<String>,
     is_retro: bool,
 ) -> Result<Vec<RepoPackage>> {
@@ -55,9 +56,8 @@ pub fn get_repo_package_ver_list(
     let results = runtime.block_on(async move {
         let mut task = Vec::new();
         for i in &arch_list {
-            task.push(get_list_from_repo(i, mirror, &client));
+            task.push(get_list_from_repo(i, mirror, topic, &client));
         }
-        
 
         futures::future::join_all(task).await
     });
@@ -108,7 +108,12 @@ fn handle(entries: Vec<Paragraph>) -> Vec<RepoPackage> {
     result
 }
 
-async fn get_list_from_repo(binary_name: &str, mirror: &str, client: &Client) -> Result<String> {
+async fn get_list_from_repo(
+    binary_name: &str,
+    mirror: &str,
+    topic: &str,
+    client: &Client,
+) -> Result<String> {
     let url = if mirror.ends_with('/') {
         mirror.to_string()
     } else {
@@ -120,8 +125,8 @@ async fn get_list_from_repo(binary_name: &str, mirror: &str, client: &Client) ->
         "debs-retro"
     };
     let url = format!(
-        "{}{}/dists/stable/main/binary-{}/Packages",
-        url, directory_name, binary_name
+        "{}{}/dists/{}/main/binary-{}/Packages",
+        url, directory_name, topic, binary_name
     );
     let result = client
         .get(url)
