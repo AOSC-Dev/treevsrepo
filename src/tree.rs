@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use eyre::{anyhow, Result};
 use fancy_regex::Regex;
 use log::{info, trace, warn};
 use std::{

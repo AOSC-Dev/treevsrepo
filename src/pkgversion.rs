@@ -1,4 +1,4 @@
-use anyhow::{bail, format_err, Result};
+use eyre::{bail, format_err, Result};
 use lazy_static::lazy_static;
 use log::warn;
 use nom::{
@@ -115,7 +115,7 @@ pub fn parse_version(i: &str) -> IResult<&str, PkgVersion> {
 }
 
 impl TryFrom<&str> for PkgVersion {
-    type Error = anyhow::Error;
+    type Error = eyre::Error;
     fn try_from(s: &str) -> Result<Self> {
         let (_, res) = parse_version(s).map_err(|e| format_err!("Malformed version: {} .", e))?;
         Ok(res)
@@ -168,9 +168,7 @@ impl Ord for PkgVersion {
         // Reverse them so that we can pop them
         self_vec.reverse();
         other_vec.reverse();
-        while !self_vec.is_empty() {
-            // Match non digit
-            let mut x = self_vec.pop().unwrap();
+        while let Some(mut x) = self_vec.pop() {
             let mut y = match other_vec.pop() {
                 Some(y) => y,
                 None => {

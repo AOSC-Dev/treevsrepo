@@ -1,4 +1,5 @@
 use clap::{ArgAction, Parser};
+use eyre::Result;
 use std::io::Write;
 use std::{path::Path, process::Command};
 use tabled::settings::object::Segment;
@@ -35,18 +36,17 @@ struct Args {
     topic: String,
 }
 
-fn main() {
+fn main() -> Result<()> {
     env_logger::init();
     let args = Args::parse();
-    let now_env = std::env::current_dir().expect("Cannot get your env!");
+    let now_env = std::env::current_dir()?;
     let arch = args.arch;
-    let repo_map =
-        repo::get_repo_package_ver_list(&args.mirror, &args.topic, arch, args.retro).unwrap();
+    let repo_map = repo::get_repo_package_ver_list(&args.mirror, &args.topic, arch, args.retro)?;
     let tree_map = tree::get_tree_package_list(Path::new(&args.tree));
     let result = vs::get_result(repo_map, tree_map);
 
     if let Some(output) = args.output {
-        vs::result_to_file(result, output, now_env);
+        vs::result_to_file(result, output, now_env)?;
     } else {
         let mut table = Table::new(result);
 
@@ -71,4 +71,6 @@ fn main() {
 
         let _ = pager_process.wait();
     }
+
+    Ok(())
 }

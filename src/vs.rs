@@ -2,6 +2,7 @@ use tabled::Tabled;
 
 use crate::repo::RepoPackage;
 use crate::tree::TreePackage;
+use eyre::Result;
 use std::path::{Path, PathBuf};
 
 #[derive(Tabled, Debug, PartialEq)]
@@ -137,7 +138,7 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
     result
 }
 
-pub fn result_to_file(result: Vec<TreeVsRepo>, output: String, now_env: PathBuf) {
+pub fn result_to_file(result: Vec<TreeVsRepo>, output: String, now_env: PathBuf) -> Result<()> {
     let mut file_vec = Vec::new();
     for i in result {
         if !file_vec.contains(&i.name) {
@@ -151,7 +152,9 @@ pub fn result_to_file(result: Vec<TreeVsRepo>, output: String, now_env: PathBuf)
     } else {
         now_env.join(output)
     };
-    std::fs::write(path, file_str).unwrap();
+    std::fs::write(path, file_str)?;
+
+    Ok(())
 }
 
 #[test]
