@@ -1,10 +1,9 @@
-use eyre::{anyhow, Result};
+use eyre::{anyhow, Context, Result};
 use fancy_regex::Regex;
 use log::{info, trace, warn};
 use std::{
     collections::HashMap,
-    fs::File,
-    io::{Read, Seek, SeekFrom},
+    fs::{self},
     path::Path,
 };
 use walkdir::WalkDir;
@@ -18,11 +17,10 @@ pub struct TreePackage {
     pub fail_arch: Option<Regex>,
 }
 
-pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
+pub fn get_tree_package_list(tree: &Path) -> Result<Vec<TreePackage>> {
     let mut result = Vec::new();
-    std::env::set_current_dir(tree)
-        .map_err(|e| anyhow!("Cannot switch to tree directory! why: {}", e))
-        .unwrap();
+    std::env::set_current_dir(tree).context("Cannot switch to tree directory")?;
+
     for entry in WalkDir::new(".")
         .max_depth(2)
         .min_depth(2)
@@ -32,52 +30,54 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
         let name = entry.file_name().to_str().unwrap();
         if entry.file_type().is_dir() {
             let path = entry.path();
-            let mut spec = if let Ok(spec) = std::fs::File::open(path.join("spec")) {
+            let spec = path.join("spec");
+            let spec = if path.join("spec").is_file() {
                 spec
             } else {
                 warn!("Package {} spec does not exist!", name);
                 continue;
             };
-            let defines_vec =
-                if let Ok(defines) = std::fs::File::open(path.join("autobuild/defines")) {
-                    vec![defines]
-                } else {
-                    // Try to walkdir group-package. like: 01-virtualbox
-                    info!(
-                        "Package {} is group package? trying to search group package ...",
-                        name
-                    );
-                    let mut result = Vec::new();
-                    for i in WalkDir::new(path)
-                        .min_depth(2)
-                        .max_depth(3)
-                        .into_iter()
-                        .flatten()
-                    {
-                        if i.file_name().to_str() == Some("defines") {
-                            let defines = std::fs::File::open(i.path());
-                            if let Ok(defines) = defines {
-                                result.push(defines);
-                            }
-                        }
-                    }
-                    if result.is_empty() {
-                        warn!("Package {} defines does not exist!", name);
-                        continue;
-                    }
 
-                    result
-                };
-            let spec_parse = read_ab_with_apml(&mut spec).unwrap_or({
+            let defines_path = path.join("autobuild/defines");
+            let defines_vec = if defines_path.is_file() {
+                vec![defines_path]
+            } else {
+                // Try to walkdir group-package. like: 01-virtualbox
+                info!(
+                    "Package {} is group package? trying to search group package ...",
+                    name
+                );
+                let mut result = Vec::new();
+                for i in WalkDir::new(path)
+                    .min_depth(2)
+                    .max_depth(3)
+                    .into_iter()
+                    .flatten()
+                {
+                    if i.file_name().to_str() == Some("defines") {
+                        result.push(i.path().to_path_buf());
+                    }
+                }
+                if result.is_empty() {
+                    warn!("Package {} defines does not exist!", name);
+                    continue;
+                }
+
+                result
+            };
+
+            let spec = fs::read_to_string(spec)?;
+            let spec_parse = read_ab_with_apml(&spec).unwrap_or({
                 trace!("Package {} Cannot use apml to parse spec file! fallback to read_ab_fallback function!", name);
 
-                read_ab_fallback(&mut spec)
+                read_ab_fallback(&spec)
             });
-            for mut defines in defines_vec {
-                let defines_parse = read_ab_with_apml(&mut defines).unwrap_or({
+            for defines in defines_vec {
+                let defines_file = fs::read_to_string(defines)?;
+                let defines_parse = read_ab_with_apml(&defines_file).unwrap_or({
                     trace!("Package {} Cannot use apml to parse defines file! fallback to read_ab_fallback function!", name);
 
-                    read_ab_fallback(&mut defines)
+                    read_ab_fallback(&defines_file)
                 });
                 let mut is_noarch = false;
                 let mut ver = String::new();
@@ -103,7 +103,7 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
                 if let Some(epoch) = defines_parse.get("PKGEPOCH") {
                     ver = format!("{}:{}", epoch, ver);
                 }
-                let ver = PkgVersion::try_from(ver.as_str()).unwrap();
+                let ver = PkgVersion::try_from(ver.as_str())?;
                 let fail_arch = if let Some(fail_arch) = defines_parse.get("FAIL_ARCH") {
                     fail_arch_regex(fail_arch).ok()
                 } else {
@@ -122,18 +122,18 @@ pub fn get_tree_package_list(tree: &Path) -> Vec<TreePackage> {
         }
     }
 
-    result
+    Ok(result)
 }
 
-fn read_ab_with_apml(file: &mut File) -> Result<HashMap<String, String>> {
-    let mut file_buf = String::new();
-    file.read_to_string(&mut file_buf)?;
+fn read_ab_with_apml(file: &str) -> Result<HashMap<String, String>> {
     let mut context = HashMap::new();
+
     // Try to set some ab3 flags to reduce the chance of returning errors
-    context.insert("ARCH".to_string(), "".to_string());
-    context.insert("PKGDIR".to_string(), "".to_string());
-    context.insert("SRCDIR".to_string(), "".to_string());
-    abbs_meta_apml::parse(&file_buf, &mut context).map_err(|e| {
+    for i in ["ARCH", "PKGDIR", "SRCDIR"] {
+        context.insert(i.to_string(), "".to_string());
+    }
+
+    abbs_meta_apml::parse(&file, &mut context).map_err(|e| {
         let e: Vec<String> = e.iter().map(|e| e.to_string()).collect();
         anyhow!(e.join(": "))
     })?;
@@ -141,18 +141,13 @@ fn read_ab_with_apml(file: &mut File) -> Result<HashMap<String, String>> {
     Ok(context)
 }
 
-fn read_ab_fallback(file: &mut File) -> HashMap<String, String> {
-    file.seek(SeekFrom::Start(0)).unwrap();
-    let mut file_buf = String::new();
-    file.read_to_string(&mut file_buf).unwrap();
+fn read_ab_fallback(file: &str) -> HashMap<String, String> {
     let mut context = HashMap::new();
-    let split_file = file_buf.split('\n').collect::<Vec<_>>();
-    handle_context(&split_file, &mut context, "VER");
-    handle_context(&split_file, &mut context, "REL");
-    handle_context(&split_file, &mut context, "PKGNAME");
-    handle_context(&split_file, &mut context, "PKGEPOCH");
-    handle_context(&split_file, &mut context, "FAIL_ARCH");
-    handle_context(&split_file, &mut context, "ABHOST");
+    let split_file = file.split('\n').collect::<Vec<_>>();
+
+    for i in ["VER", "REL", "PKGNAME", "PKGEPOCH", "FAIL_ARCH", "ABHOST"] {
+        handle_context(&split_file, &mut context, i);
+    }
 
     context
 }
