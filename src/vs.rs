@@ -2,7 +2,7 @@ use tabled::Tabled;
 
 use crate::repo::RepoPackage;
 use crate::tree::TreePackage;
-use eyre::Result;
+use eyre::{eyre, Result};
 use std::path::{Path, PathBuf};
 
 #[derive(Tabled, Debug, PartialEq)]
@@ -13,7 +13,10 @@ pub struct TreeVsRepo {
     pub repo_version: String,
 }
 
-pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec<TreeVsRepo> {
+pub fn get_result(
+    repo_vec: Vec<RepoPackage>,
+    tree_vec: Vec<TreePackage>,
+) -> Result<Vec<TreeVsRepo>> {
     let mut result = Vec::new();
     let mut all_no_match = Vec::new();
     for tree_package in tree_vec.iter() {
@@ -22,86 +25,97 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
             .filter(|x| x.name == tree_package.name)
             .collect::<Vec<_>>();
         for repo_package in repo_filter_vec.iter() {
-            if tree_package.version != repo_package.version {
-                if tree_package.is_noarch && repo_package.arch != "all" {
-                    if repo_filter_vec
+            if tree_package.version == repo_package.version {
+                continue;
+            }
+            if tree_package.is_noarch && repo_package.arch != "all" {
+                if repo_filter_vec
+                    .iter()
+                    .any(|x| x.arch == "all" && x.version == tree_package.version)
+                {
+                    continue;
+                } else if repo_filter_vec
+                    .iter()
+                    .all(|x| x.version != tree_package.version)
+                {
+                    if all_no_match
                         .iter()
-                        .any(|x| x.arch == "all" && x.version == tree_package.version)
-                    {
-                        continue;
-                    } else if repo_filter_vec
-                        .iter()
-                        .all(|x| x.version != tree_package.version)
-                    {
-                        if all_no_match
+                        .all(|x: &&RepoPackage| x.name != repo_package.name)
+                        && !result
                             .iter()
-                            .all(|x: &&RepoPackage| x.name != repo_package.name)
-                            && !result
-                                .iter()
-                                .any(|x: &TreeVsRepo| x.name == repo_package.name)
-                        {
-                            all_no_match.push(&(*(*repo_package)));
-                        }
-                        continue;
-                    }
-                } else if !tree_package.is_noarch && repo_package.arch == "all" {
-                    if repo_filter_vec
-                        .iter()
-                        .any(|x| x.arch != "all" && x.version == tree_package.version)
+                            .any(|x: &TreeVsRepo| x.name == repo_package.name)
                     {
-                        continue;
-                    } else if repo_filter_vec
-                        .iter()
-                        .all(|x| x.version != tree_package.version)
-                    {
-                        if all_no_match
-                            .iter()
-                            .all(|x: &&RepoPackage| x.name != repo_package.name)
-                            && !result
-                                .iter()
-                                .any(|x: &TreeVsRepo| x.name == repo_package.name)
-                        {
-                            all_no_match.push(repo_package);
-                        }
-                        continue;
+                        all_no_match.push(&(*(*repo_package)));
                     }
+                    continue;
                 }
-                if all_no_match.iter().all(|x| x.name != repo_package.name) {
-                    let mut push = true;
-                    if let Some(fail_arch) = &tree_package.fail_arch {
-                        if fail_arch.is_match(&repo_package.arch).unwrap() {
-                            push = false;
-                        }
-                    }
-                    // Since there are duplicate tree packages (e.g. mesa and
-                    // mesa-amber), do not push if there is a matching package
-                    // from tree_vec.
-                    if tree_vec
+            } else if !tree_package.is_noarch && repo_package.arch == "all" {
+                if repo_filter_vec
+                    .iter()
+                    .any(|x| x.arch != "all" && x.version == tree_package.version)
+                {
+                    continue;
+                } else if repo_filter_vec
+                    .iter()
+                    .all(|x| x.version != tree_package.version)
+                {
+                    if all_no_match
                         .iter()
-                        .any(|x| x.name == repo_package.name && x.version == repo_package.version)
+                        .all(|x: &&RepoPackage| x.name != repo_package.name)
+                        && !result
+                            .iter()
+                            .any(|x: &TreeVsRepo| x.name == repo_package.name)
                     {
-                        push = false;
+                        all_no_match.push(repo_package);
                     }
-                    if push {
-                        result.push(TreeVsRepo {
-                            name: repo_package.name.to_string(),
-                            arch: repo_package.arch.to_string(),
-                            tree_version: tree_package.version.to_string(),
-                            repo_version: repo_package.version.to_string(),
-                        });
-                    }
+                    continue;
+                }
+            }
+            if all_no_match.iter().all(|x| x.name != repo_package.name) {
+                let mut push = true;
+
+                if tree_package
+                    .fail_arch
+                    .as_ref()
+                    .and_then(|x| x.is_match(&repo_package.arch).ok())
+                    .unwrap_or(false)
+                {
+                    push = false;
+                }
+
+                // Since there are duplicate tree packages (e.g. mesa and
+                // mesa-amber), do not push if there is a matching package
+                // from tree_vec.
+                if tree_vec
+                    .iter()
+                    .any(|x| x.name == repo_package.name && x.version == repo_package.version)
+                {
+                    push = false;
+                }
+
+                if push {
+                    result.push(TreeVsRepo {
+                        name: repo_package.name.to_string(),
+                        arch: repo_package.arch.to_string(),
+                        tree_version: tree_package.version.to_string(),
+                        repo_version: repo_package.version.to_string(),
+                    });
                 }
             }
         }
     }
     for i in all_no_match {
-        let tree_index = tree_vec.iter().position(|x| x.name == i.name).unwrap();
-        let tree_version = tree_vec[tree_index].version.to_string();
-        let is_noarch = tree_vec[tree_index].is_noarch;
-        let repo_not_all_match = repo_vec
+        let tree = tree_vec
             .iter()
-            .filter(|x| x.name == i.name && x.arch != "all")
-            .collect::<Vec<_>>();
+            .find(|x| x.name == i.name)
+            .ok_or_else(|| eyre!("Could not find tree version"))?;
+
+        let tree_version = tree.version.to_string();
+        let is_noarch = tree.is_noarch;
+        let mut repo_not_all_match = repo_vec
+            .iter()
+            .filter(|x| x.name == i.name && x.arch != "all");
+
         if is_noarch {
             let repo_index = repo_vec
                 .iter()
@@ -115,11 +129,15 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
                     repo_version,
                 })
             } else {
+                let v = repo_not_all_match
+                    .next()
+                    .ok_or_else(|| eyre!("repo_not_all_match is empty"))?;
+
                 result.push(TreeVsRepo {
-                    name: repo_not_all_match[0].name.to_string(),
+                    name: v.name.to_string(),
                     arch: "all".to_string(),
                     tree_version: tree_version.to_string(),
-                    repo_version: repo_not_all_match[0].version.to_string(),
+                    repo_version: v.version.to_string(),
                 });
             }
         } else {
@@ -133,9 +151,10 @@ pub fn get_result(repo_vec: Vec<RepoPackage>, tree_vec: Vec<TreePackage>) -> Vec
             }
         }
     }
+
     result.sort_by(|x, y| x.name.cmp(&y.name));
 
-    result
+    Ok(result)
 }
 
 pub fn result_to_file(result: Vec<TreeVsRepo>, output: String, now_env: PathBuf) -> Result<()> {
@@ -171,7 +190,7 @@ fn test_get_result_1() {
         fail_arch: None,
     }];
 
-    assert!(get_result(repo_vec, tree_vec).is_empty());
+    assert!(get_result(repo_vec, tree_vec).unwrap().is_empty());
 }
 
 #[test]
@@ -196,7 +215,7 @@ fn test_get_result_2() {
     }];
 
     assert_eq!(
-        get_result(repo_vec, tree_vec),
+        get_result(repo_vec, tree_vec).unwrap(),
         vec![TreeVsRepo {
             name: "qaq".to_string(),
             arch: "all".to_string(),
@@ -228,7 +247,7 @@ fn test_get_result_3() {
     }];
 
     assert_eq!(
-        get_result(repo_vec, tree_vec),
+        get_result(repo_vec, tree_vec).unwrap(),
         vec![TreeVsRepo {
             name: "qaq".to_string(),
             arch: "owo".to_string(),
@@ -260,7 +279,7 @@ fn test_get_result_4() {
     }];
 
     assert_eq!(
-        get_result(repo_vec, tree_vec),
+        get_result(repo_vec, tree_vec).unwrap(),
         vec![
             TreeVsRepo {
                 name: "qaq".to_string(),
@@ -305,7 +324,7 @@ fn test_get_result_5() {
     }];
 
     assert_eq!(
-        get_result(repo_vec, tree_vec),
+        get_result(repo_vec, tree_vec).unwrap(),
         vec![
             TreeVsRepo {
                 name: "qaq".to_string(),
@@ -349,7 +368,7 @@ fn test_get_result_6() {
         fail_arch: None,
     }];
 
-    assert!(get_result(repo_vec, tree_vec).is_empty())
+    assert!(get_result(repo_vec, tree_vec).unwrap().is_empty())
 }
 
 #[test]
@@ -374,5 +393,5 @@ fn test_get_result_7() {
         },
     ];
 
-    assert!(get_result(repo_vec, tree_vec).is_empty())
+    assert!(get_result(repo_vec, tree_vec).unwrap().is_empty())
 }

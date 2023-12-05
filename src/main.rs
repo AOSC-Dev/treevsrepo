@@ -43,7 +43,7 @@ fn main() -> Result<()> {
     let arch = args.arch;
     let repo_map = repo::get_repo_package_ver_list(&args.mirror, &args.topic, arch, args.retro)?;
     let tree_map = tree::get_tree_package_list(Path::new(&args.tree))?;
-    let result = vs::get_result(repo_map, tree_map);
+    let result = vs::get_result(repo_map, tree_map)?;
 
     if let Some(output) = args.output {
         vs::result_to_file(result, output, now_env)?;
