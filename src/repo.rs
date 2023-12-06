@@ -100,7 +100,7 @@ pub fn get_repo_package_ver_list(
         }
     }
 
-    Ok(repo_pkgs)
+    Ok(result)
 }
 
 impl TryFrom<Paragraph<'_>> for RepoPackage {
