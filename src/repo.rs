@@ -66,7 +66,7 @@ pub fn get_repo_package_ver_list(
         match i {
             Ok(res) => {
                 let entries = debcontrol::parse_str(&res).map_err(|e| eyre!("{e}"))?;
-                repo_pkgs.extend(filter_repeated_packages(entries)?);
+                repo_pkgs.extend(parse_packages_file(entries)?);
             }
             Err(e) => return Err(e),
         }
@@ -130,7 +130,7 @@ fn debcontrol_field<'a>(value: &'a Paragraph<'a>, field: &str) -> Result<&'a Str
     Ok(field)
 }
 
-fn filter_repeated_packages(entries: Vec<Paragraph>) -> Result<Vec<RepoPackage>> {
+fn parse_packages_file(entries: Vec<Paragraph>) -> Result<Vec<RepoPackage>> {
     let mut new_entries = vec![];
 
     for i in entries
