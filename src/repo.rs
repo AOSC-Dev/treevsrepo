@@ -2,7 +2,6 @@ use std::time::Duration;
 
 use debcontrol::Paragraph;
 use eyre::{eyre, Result};
-use log::debug;
 use reqwest::Client;
 use tokio::runtime::Builder;
 
@@ -42,7 +41,7 @@ pub fn get_repo_package_ver_list(
     arch_list: Vec<String>,
     is_retro: bool,
 ) -> Result<Vec<RepoPackage>> {
-    let mut result = Vec::new();
+    let mut repo_pkgs = Vec::new();
     let arch_list = if !arch_list.is_empty() {
         arch_list.iter().map(|x| x.as_str()).collect::<Vec<_>>()
     } else if is_retro {
@@ -67,13 +66,41 @@ pub fn get_repo_package_ver_list(
         match i {
             Ok(res) => {
                 let entries = debcontrol::parse_str(&res).map_err(|e| eyre!("{e}"))?;
-                result.extend(filter_repeated_packages(entries)?);
+                repo_pkgs.extend(filter_repeated_packages(entries)?);
             }
             Err(e) => return Err(e),
         }
     }
 
-    Ok(result)
+    repo_pkgs.sort_unstable_by(|a, b| a.name.cmp(&b.name));
+
+    let mut versions = vec![];
+    let mut last_name = &repo_pkgs
+        .first()
+        .ok_or_else(|| eyre!("Packages file is empty"))?
+        .name;
+    let mut result = vec![];
+
+    for entry in &repo_pkgs {
+        if &entry.name == last_name {
+            versions.push((entry, PkgVersion::try_from(entry.version.as_str())?));
+        } else {
+            versions.sort_unstable_by(|a, b| a.1.version.cmp(&b.1.version));
+            result.push(
+                versions
+                    .last()
+                    .ok_or_else(|| eyre!("Packages file is empty"))?
+                    .0
+                    .to_owned()
+                    .clone(),
+            );
+            versions.clear();
+            last_name = &entry.name;
+            versions.push((entry, PkgVersion::try_from(entry.version.as_str())?));
+        }
+    }
+
+    Ok(repo_pkgs)
 }
 
 impl TryFrom<Paragraph<'_>> for RepoPackage {
@@ -104,7 +131,6 @@ fn debcontrol_field<'a>(value: &'a Paragraph<'a>, field: &str) -> Result<&'a Str
 }
 
 fn filter_repeated_packages(entries: Vec<Paragraph>) -> Result<Vec<RepoPackage>> {
-    let mut result = Vec::new();
     let mut new_entries = vec![];
 
     for i in entries
@@ -115,36 +141,7 @@ fn filter_repeated_packages(entries: Vec<Paragraph>) -> Result<Vec<RepoPackage>>
         new_entries.push(i);
     }
 
-    new_entries.sort_unstable_by(|a, b| a.name.cmp(&b.name));
-
-    let mut versions = vec![];
-    let mut last_name = &new_entries
-        .first()
-        .ok_or_else(|| eyre!("Packages file is empty"))?
-        .name;
-
-    for entry in &new_entries {
-        if &entry.name == last_name {
-            versions.push((entry, PkgVersion::try_from(entry.version.as_str())?));
-        } else {
-            versions.sort_unstable_by(|a, b| a.1.version.cmp(&b.1.version));
-            result.push(
-                versions
-                    .last()
-                    .ok_or_else(|| eyre!("Packages file is empty"))?
-                    .0
-                    .to_owned()
-                    .clone(),
-            );
-            versions.clear();
-            last_name = &entry.name;
-            versions.push((entry, PkgVersion::try_from(entry.version.as_str())?));
-        }
-    }
-
-    debug!("{result:?}");
-
-    Ok(result)
+    Ok(new_entries)
 }
 
 async fn get_list_from_repo(
