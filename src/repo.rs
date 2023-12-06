@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use debcontrol::Paragraph;
 use eyre::{eyre, Result};
+use log::debug;
 use reqwest::Client;
 use tokio::runtime::Builder;
 
@@ -140,6 +141,8 @@ fn filter_repeated_packages(entries: Vec<Paragraph>) -> Result<Vec<RepoPackage>>
             versions.push((entry, PkgVersion::try_from(entry.version.as_str())?));
         }
     }
+
+    debug!("{result:?}");
 
     Ok(result)
 }

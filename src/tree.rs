@@ -8,8 +8,6 @@ use std::{
 };
 use walkdir::WalkDir;
 
-use crate::pkgversion::PkgVersion;
-
 pub struct TreePackage {
     pub name: String,
     pub version: String,
@@ -103,12 +101,13 @@ pub fn get_tree_package_list(tree: &Path) -> Result<Vec<TreePackage>> {
                 if let Some(epoch) = defines_parse.get("PKGEPOCH") {
                     ver = format!("{}:{}", epoch, ver);
                 }
-                let ver = PkgVersion::try_from(ver.as_str())?;
+
                 let fail_arch = if let Some(fail_arch) = defines_parse.get("FAIL_ARCH") {
                     fail_arch_regex(fail_arch).ok()
                 } else {
                     None
                 };
+
                 if defines_parse.get("ABHOST") == Some(&"noarch".to_string()) {
                     is_noarch = true;
                 }

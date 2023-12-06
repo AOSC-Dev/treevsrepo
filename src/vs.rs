@@ -117,11 +117,12 @@ pub fn get_result(
             .filter(|x| x.name == i.name && x.arch != "all");
 
         if is_noarch {
-            let repo_index = repo_vec
+            let repo_pkg = repo_vec
                 .iter()
-                .position(|x| x.name == i.name && x.arch == "all");
-            if let Some(repo_index) = repo_index {
-                let repo_version = repo_vec[repo_index].version.to_string();
+                .find(|x| x.name == i.name && x.arch == "all");
+
+            if let Some(repo_pkg) = repo_pkg {
+                let repo_version = repo_pkg.version.to_string();
                 result.push(TreeVsRepo {
                     name: i.name.to_string(),
                     tree_version,
