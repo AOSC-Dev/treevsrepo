@@ -85,7 +85,7 @@ pub fn get_repo_package_ver_list(
         if &entry.name == last_name {
             versions.push((entry, PkgVersion::try_from(entry.version.as_str())?));
         } else {
-            versions.sort_unstable_by(|a, b| a.1.version.cmp(&b.1.version));
+            versions.sort_unstable_by(|a, b| a.1.cmp(&b.1));
             result.push(
                 versions
                     .last()
