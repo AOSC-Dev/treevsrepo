@@ -72,17 +72,17 @@ pub fn get_repo_package_ver_list(
         }
     }
 
-    repo_pkgs.sort_unstable_by(|a, b| a.name.cmp(&b.name));
+    // sort by (name, arch) to find latest version for each (name, arch) pair
+    repo_pkgs.sort_unstable_by(|a, b| a.name.cmp(&b.name).then(a.arch.cmp(&b.arch)));
 
     let mut versions = vec![];
-    let mut last_name = &repo_pkgs
+    let mut last_entry = repo_pkgs
         .first()
-        .ok_or_else(|| eyre!("Packages file is empty"))?
-        .name;
+        .ok_or_else(|| eyre!("Packages file is empty"))?;
     let mut result = vec![];
 
     for entry in &repo_pkgs {
-        if &entry.name == last_name {
+        if entry.name == last_entry.name && entry.arch == last_entry.arch {
             versions.push((entry, PkgVersion::try_from(entry.version.as_str())?));
         } else {
             versions.sort_unstable_by(|a, b| a.1.cmp(&b.1));
@@ -95,7 +95,7 @@ pub fn get_repo_package_ver_list(
                     .clone(),
             );
             versions.clear();
-            last_name = &entry.name;
+            last_entry = entry;
             versions.push((entry, PkgVersion::try_from(entry.version.as_str())?));
         }
     }
