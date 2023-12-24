@@ -62,7 +62,7 @@ fn main() -> Result<()> {
                 x
             }
             DpkgCompare::Equal => x,
-            DpkgCompare::Greeter => {
+            DpkgCompare::Greater => {
                 x.tree_version = style(x.tree_version).green().to_string();
                 x.repo_version = style(x.repo_version).red().to_string();
                 x

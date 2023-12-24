@@ -22,7 +22,7 @@ pub struct TreeVsRepo {
 pub enum DpkgCompare {
     Less,
     Equal,
-    Greeter,
+    Greater,
 }
 
 pub fn get_result(
@@ -114,7 +114,7 @@ pub fn get_result(
                         compare: match cmp_versions(&tree_package.version, &repo_package.version) {
                             Ordering::Less => DpkgCompare::Less,
                             Ordering::Equal => DpkgCompare::Equal,
-                            Ordering::Greater => DpkgCompare::Greeter,
+                            Ordering::Greater => DpkgCompare::Greater,
                         },
                     });
                 }
@@ -148,7 +148,7 @@ pub fn get_result(
                     compare: match cmp_versions(&tree_version, &repo_version) {
                         Ordering::Less => DpkgCompare::Less,
                         Ordering::Equal => DpkgCompare::Equal,
-                        Ordering::Greater => DpkgCompare::Greeter,
+                        Ordering::Greater => DpkgCompare::Greater,
                     },
                 })
             } else {
@@ -164,7 +164,7 @@ pub fn get_result(
                     compare: match cmp_versions(&tree_version, &v.version) {
                         Ordering::Less => DpkgCompare::Less,
                         Ordering::Equal => DpkgCompare::Equal,
-                        Ordering::Greater => DpkgCompare::Greeter,
+                        Ordering::Greater => DpkgCompare::Greater,
                     },
                 });
             }
@@ -178,7 +178,7 @@ pub fn get_result(
                     compare: match oma_apt::util::cmp_versions(&tree_version, &j.version) {
                         std::cmp::Ordering::Less => DpkgCompare::Less,
                         std::cmp::Ordering::Equal => DpkgCompare::Equal,
-                        std::cmp::Ordering::Greater => DpkgCompare::Greeter,
+                        std::cmp::Ordering::Greater => DpkgCompare::Greater,
                     },
                 });
             }
@@ -254,7 +254,7 @@ fn test_get_result_2() {
             arch: "all".to_string(),
             tree_version: "1:1.0".to_string(),
             repo_version: "1.0".to_string(),
-            compare: DpkgCompare::Greeter,
+            compare: DpkgCompare::Greater,
         }],
     )
 }
@@ -287,7 +287,7 @@ fn test_get_result_3() {
             arch: "owo".to_string(),
             tree_version: "114514".to_string(),
             repo_version: "114513".to_string(),
-            compare: DpkgCompare::Greeter,
+            compare: DpkgCompare::Greater,
         }],
     )
 }
@@ -321,14 +321,14 @@ fn test_get_result_4() {
                 arch: "owo".to_string(),
                 tree_version: "114514".to_string(),
                 repo_version: "114513".to_string(),
-                compare: DpkgCompare::Greeter,
+                compare: DpkgCompare::Greater,
             },
             TreeVsRepo {
                 name: "qaq".to_string(),
                 arch: "pwp".to_string(),
                 tree_version: "114514".to_string(),
                 repo_version: "1.0".to_string(),
-                compare: DpkgCompare::Greeter,
+                compare: DpkgCompare::Greater,
             }
         ],
     )
@@ -368,14 +368,14 @@ fn test_get_result_5() {
                 arch: "owo".to_string(),
                 tree_version: "114514".to_string(),
                 repo_version: "114513".to_string(),
-                compare: DpkgCompare::Greeter,
+                compare: DpkgCompare::Greater,
             },
             TreeVsRepo {
                 name: "qaq".to_string(),
                 arch: "pwp".to_string(),
                 tree_version: "114514".to_string(),
                 repo_version: "1.0".to_string(),
-                compare: DpkgCompare::Greeter,
+                compare: DpkgCompare::Greater,
             }
         ],
     )
