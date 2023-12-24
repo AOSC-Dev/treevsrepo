@@ -1,7 +1,7 @@
-use oma_apt::util::cmp_versions;
 use serde::Serialize;
 use tabled::Tabled;
 
+use crate::pkgversion::PkgVersion;
 use crate::repo::RepoPackage;
 use crate::tree::TreePackage;
 use eyre::{eyre, Result};
@@ -37,7 +37,9 @@ pub fn get_result(
             .filter(|x| x.name == tree_package.name)
             .collect::<Vec<_>>();
         for repo_package in repo_filter_vec.iter() {
-            if cmp_versions(&tree_package.version, &repo_package.version) == Ordering::Equal {
+            if PkgVersion::try_from(tree_package.version.as_str())?
+                == PkgVersion::try_from(repo_package.version.as_str())?
+            {
                 continue;
             }
             if tree_package.is_noarch && repo_package.arch != "all" {
@@ -111,7 +113,9 @@ pub fn get_result(
                         arch: repo_package.arch.to_string(),
                         tree_version: tree_package.version.to_string(),
                         repo_version: repo_package.version.to_string(),
-                        compare: match cmp_versions(&tree_package.version, &repo_package.version) {
+                        compare: match PkgVersion::try_from(tree_package.version.as_str())?
+                            .cmp(&PkgVersion::try_from(repo_package.version.as_str())?)
+                        {
                             Ordering::Less => DpkgCompare::Less,
                             Ordering::Equal => DpkgCompare::Equal,
                             Ordering::Greater => DpkgCompare::Greater,
@@ -145,7 +149,9 @@ pub fn get_result(
                     arch: "all".to_string(),
                     tree_version: tree_version.clone(),
                     repo_version: repo_version.clone(),
-                    compare: match cmp_versions(&tree_version, &repo_version) {
+                    compare: match PkgVersion::try_from(tree_version.as_str())?
+                        .cmp(&PkgVersion::try_from(repo_version.as_str())?)
+                    {
                         Ordering::Less => DpkgCompare::Less,
                         Ordering::Equal => DpkgCompare::Equal,
                         Ordering::Greater => DpkgCompare::Greater,
@@ -161,7 +167,9 @@ pub fn get_result(
                     arch: "all".to_string(),
                     tree_version: tree_version.to_string(),
                     repo_version: v.version.to_string(),
-                    compare: match cmp_versions(&tree_version, &v.version) {
+                    compare: match PkgVersion::try_from(tree_version.as_str())?
+                        .cmp(&PkgVersion::try_from(v.version.as_str())?)
+                    {
                         Ordering::Less => DpkgCompare::Less,
                         Ordering::Equal => DpkgCompare::Equal,
                         Ordering::Greater => DpkgCompare::Greater,
@@ -175,7 +183,9 @@ pub fn get_result(
                     arch: j.arch.to_string(),
                     tree_version: tree_version.to_string(),
                     repo_version: j.version.to_string(),
-                    compare: match oma_apt::util::cmp_versions(&tree_version, &j.version) {
+                    compare: match PkgVersion::try_from(tree_version.as_str())?
+                        .cmp(&PkgVersion::try_from(j.version.as_str())?)
+                    {
                         std::cmp::Ordering::Less => DpkgCompare::Less,
                         std::cmp::Ordering::Equal => DpkgCompare::Equal,
                         std::cmp::Ordering::Greater => DpkgCompare::Greater,

@@ -13,7 +13,7 @@ clap = { version = "4.2", features = ["derive"] }
 abbs-meta-apml = { git = "https://github.com/AOSC-Dev/abbs-meta-rs", package = "abbs-meta-apml", rev = "4a592937b44e8bb93103edd34eff384169a3248a" }
 log = "0.4"
 env_logger = "0.10"
-tokio = { version = "1.17", features = ["rt-multi-thread", "rt", "time"] }
+tokio = { version = "1.17", features = ["rt-multi-thread"] }
 futures = "0.3"
 fancy-regex = "0.13"
 nom = "7.1"
@@ -22,5 +22,4 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 debcontrol = { git = "https://github.com/AOSC-Dev/debcontrol-rs/", rev = "e92376703b20afe1360f3612472f2597029c7475" }
 tabled = { version = "0.15", features = ["ansi-str"] }
-oma-apt = "0.1"
 console = "0.15"
