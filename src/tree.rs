@@ -1,4 +1,4 @@
-use eyre::{anyhow, Context, Result};
+use eyre::{anyhow, eyre, Context, Result};
 use fancy_regex::Regex;
 use log::{info, trace, warn};
 use std::{
@@ -25,14 +25,22 @@ pub fn get_tree_package_list(tree: &Path) -> Result<Vec<TreePackage>> {
         .into_iter()
         .flatten()
     {
-        let name = entry.file_name().to_str().unwrap();
+        let name = entry
+            .file_name()
+            .to_str()
+            .ok_or(eyre!("Failed to convert file name to string"))?;
+
         if entry.file_type().is_dir() {
             let path = entry.path();
             let spec = path.join("spec");
             let spec = if path.join("spec").is_file() {
                 spec
             } else {
-                warn!("Package {} spec does not exist!", name);
+                warn!(
+                    "Package {} path {} spec does not exist!",
+                    name,
+                    path.display()
+                );
                 continue;
             };
 
