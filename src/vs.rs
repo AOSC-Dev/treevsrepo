@@ -1,3 +1,4 @@
+use log::error;
 use serde::Serialize;
 use tabled::Tabled;
 
@@ -37,11 +38,21 @@ pub fn get_result(
             .filter(|x| x.name == tree_package.name)
             .collect::<Vec<_>>();
         for repo_package in repo_filter_vec.iter() {
-            if PkgVersion::try_from(tree_package.version.as_str())?
-                == PkgVersion::try_from(repo_package.version.as_str())?
+            let tree_package_ver_obj = PkgVersion::try_from(tree_package.version.as_str());
+            let repo_package_ver_obj = PkgVersion::try_from(repo_package.version.as_str());
+
+            match tree_package_ver_obj
+                .as_ref()
+                .and_then(|x| repo_package_ver_obj.as_ref().map(|y| x == y))
             {
-                continue;
+                Ok(true) => continue,
+                Ok(false) => (),
+                Err(e) => {
+                    error!("Compare package {} Got Error: {e}", repo_package.name);
+                    continue;
+                }
             }
+
             if tree_package.is_noarch && repo_package.arch != "all" {
                 if repo_filter_vec
                     .iter()
@@ -113,12 +124,13 @@ pub fn get_result(
                         arch: repo_package.arch.to_string(),
                         tree_version: tree_package.version.to_string(),
                         repo_version: repo_package.version.to_string(),
-                        compare: match PkgVersion::try_from(tree_package.version.as_str())?
-                            .cmp(&PkgVersion::try_from(repo_package.version.as_str())?)
-                        {
-                            Ordering::Less => DpkgCompare::Less,
-                            Ordering::Equal => DpkgCompare::Equal,
-                            Ordering::Greater => DpkgCompare::Greater,
+                        compare: match compare_version(
+                            tree_package_ver_obj,
+                            repo_package_ver_obj,
+                            &repo_package.name,
+                        ) {
+                            Some(value) => value,
+                            None => continue,
                         },
                     });
                 }
@@ -149,12 +161,13 @@ pub fn get_result(
                     arch: "all".to_string(),
                     tree_version: tree_version.clone(),
                     repo_version: repo_version.clone(),
-                    compare: match PkgVersion::try_from(tree_version.as_str())?
-                        .cmp(&PkgVersion::try_from(repo_version.as_str())?)
-                    {
-                        Ordering::Less => DpkgCompare::Less,
-                        Ordering::Equal => DpkgCompare::Equal,
-                        Ordering::Greater => DpkgCompare::Greater,
+                    compare: match compare_version(
+                        PkgVersion::try_from(tree_version.as_str()),
+                        PkgVersion::try_from(repo_version.as_str()),
+                        &i.name,
+                    ) {
+                        Some(value) => value,
+                        None => continue,
                     },
                 })
             } else {
@@ -167,12 +180,13 @@ pub fn get_result(
                     arch: "all".to_string(),
                     tree_version: tree_version.to_string(),
                     repo_version: v.version.to_string(),
-                    compare: match PkgVersion::try_from(tree_version.as_str())?
-                        .cmp(&PkgVersion::try_from(v.version.as_str())?)
-                    {
-                        Ordering::Less => DpkgCompare::Less,
-                        Ordering::Equal => DpkgCompare::Equal,
-                        Ordering::Greater => DpkgCompare::Greater,
+                    compare: match compare_version(
+                        PkgVersion::try_from(tree_version.as_str()),
+                        PkgVersion::try_from(v.version.as_str()),
+                        &v.name,
+                    ) {
+                        Some(value) => value,
+                        None => continue,
                     },
                 });
             }
@@ -183,12 +197,13 @@ pub fn get_result(
                     arch: j.arch.to_string(),
                     tree_version: tree_version.to_string(),
                     repo_version: j.version.to_string(),
-                    compare: match PkgVersion::try_from(tree_version.as_str())?
-                        .cmp(&PkgVersion::try_from(j.version.as_str())?)
-                    {
-                        std::cmp::Ordering::Less => DpkgCompare::Less,
-                        std::cmp::Ordering::Equal => DpkgCompare::Equal,
-                        std::cmp::Ordering::Greater => DpkgCompare::Greater,
+                    compare: match compare_version(
+                        PkgVersion::try_from(tree_version.as_str()),
+                        PkgVersion::try_from(j.version.as_str()),
+                        &j.name,
+                    ) {
+                        Some(value) => value,
+                        None => continue,
                     },
                 });
             }
@@ -198,6 +213,24 @@ pub fn get_result(
     result.sort_by(|x, y| x.name.cmp(&y.name));
 
     Ok(result)
+}
+
+fn compare_version(
+    tree_package_ver_obj: Result<PkgVersion>,
+    repo_package_ver_obj: Result<PkgVersion>,
+    name: &str,
+) -> Option<DpkgCompare> {
+    Some(
+        match tree_package_ver_obj.and_then(|x| repo_package_ver_obj.map(|y| x.cmp(&y))) {
+            Ok(Ordering::Less) => DpkgCompare::Less,
+            Ok(Ordering::Equal) => DpkgCompare::Equal,
+            Ok(Ordering::Greater) => DpkgCompare::Greater,
+            Err(e) => {
+                error!("Compare package {} Got Error: {e}", name);
+                return None;
+            }
+        },
+    )
 }
 
 pub fn result_to_file(result: Vec<TreeVsRepo>, output: String, now_env: PathBuf) -> Result<()> {
