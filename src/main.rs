@@ -1,10 +1,12 @@
 use clap::{ArgAction, Parser};
+use console::style;
 use eyre::Result;
 use std::io::Write;
 use std::{path::Path, process::Command};
 use tabled::settings::object::Segment;
 use tabled::settings::{Alignment, Format, Modify, Style, Width};
 use tabled::Table;
+use vs::DpkgCompare;
 
 mod pkgversion;
 mod repo;
@@ -48,6 +50,20 @@ fn main() -> Result<()> {
     if let Some(output) = args.output {
         vs::result_to_file(result, output, now_env)?;
     } else {
+        let result = result.into_iter().map(|mut x| match x.compare {
+            DpkgCompare::Less => {
+                x.tree_version = style(x.tree_version).red().to_string();
+                x.repo_version = style(x.repo_version).green().to_string();
+                x
+            }
+            DpkgCompare::Equal => x,
+            DpkgCompare::Greeter => {
+                x.tree_version = style(x.tree_version).green().to_string();
+                x.repo_version = style(x.repo_version).red().to_string();
+                x
+            }
+        });
+
         let mut table = Table::new(result);
 
         table

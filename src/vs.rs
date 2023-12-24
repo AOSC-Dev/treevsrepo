@@ -1,8 +1,10 @@
+use oma_apt::util::cmp_versions;
 use tabled::Tabled;
 
 use crate::repo::RepoPackage;
 use crate::tree::TreePackage;
 use eyre::{eyre, Result};
+use std::cmp::Ordering;
 use std::path::{Path, PathBuf};
 
 #[derive(Tabled, Debug, PartialEq)]
@@ -11,6 +13,15 @@ pub struct TreeVsRepo {
     pub arch: String,
     pub tree_version: String,
     pub repo_version: String,
+    #[tabled(skip)]
+    pub compare: DpkgCompare,
+}
+
+#[derive(Tabled, Debug, PartialEq)]
+pub enum DpkgCompare {
+    Less,
+    Equal,
+    Greeter,
 }
 
 pub fn get_result(
@@ -99,6 +110,11 @@ pub fn get_result(
                         arch: repo_package.arch.to_string(),
                         tree_version: tree_package.version.to_string(),
                         repo_version: repo_package.version.to_string(),
+                        compare: match cmp_versions(&tree_package.version, &repo_package.version) {
+                            Ordering::Less => DpkgCompare::Less,
+                            Ordering::Equal => DpkgCompare::Equal,
+                            Ordering::Greater => DpkgCompare::Greeter,
+                        },
                     });
                 }
             }
@@ -125,9 +141,14 @@ pub fn get_result(
                 let repo_version = repo_pkg.version.to_string();
                 result.push(TreeVsRepo {
                     name: i.name.to_string(),
-                    tree_version,
                     arch: "all".to_string(),
-                    repo_version,
+                    tree_version: tree_version.clone(),
+                    repo_version: repo_version.clone(),
+                    compare: match cmp_versions(&tree_version, &repo_version) {
+                        Ordering::Less => DpkgCompare::Less,
+                        Ordering::Equal => DpkgCompare::Equal,
+                        Ordering::Greater => DpkgCompare::Greeter,
+                    },
                 })
             } else {
                 let v = repo_not_all_match
@@ -139,6 +160,11 @@ pub fn get_result(
                     arch: "all".to_string(),
                     tree_version: tree_version.to_string(),
                     repo_version: v.version.to_string(),
+                    compare: match cmp_versions(&tree_version, &v.version) {
+                        Ordering::Less => DpkgCompare::Less,
+                        Ordering::Equal => DpkgCompare::Equal,
+                        Ordering::Greater => DpkgCompare::Greeter,
+                    },
                 });
             }
         } else {
@@ -148,6 +174,11 @@ pub fn get_result(
                     arch: j.arch.to_string(),
                     tree_version: tree_version.to_string(),
                     repo_version: j.version.to_string(),
+                    compare: match oma_apt::util::cmp_versions(&tree_version, &j.version) {
+                        std::cmp::Ordering::Less => DpkgCompare::Less,
+                        std::cmp::Ordering::Equal => DpkgCompare::Equal,
+                        std::cmp::Ordering::Greater => DpkgCompare::Greeter,
+                    },
                 });
             }
         }
@@ -222,6 +253,7 @@ fn test_get_result_2() {
             arch: "all".to_string(),
             tree_version: "1:1.0".to_string(),
             repo_version: "1.0".to_string(),
+            compare: DpkgCompare::Greeter,
         }],
     )
 }
@@ -254,6 +286,7 @@ fn test_get_result_3() {
             arch: "owo".to_string(),
             tree_version: "114514".to_string(),
             repo_version: "114513".to_string(),
+            compare: DpkgCompare::Greeter,
         }],
     )
 }
@@ -287,12 +320,14 @@ fn test_get_result_4() {
                 arch: "owo".to_string(),
                 tree_version: "114514".to_string(),
                 repo_version: "114513".to_string(),
+                compare: DpkgCompare::Greeter,
             },
             TreeVsRepo {
                 name: "qaq".to_string(),
                 arch: "pwp".to_string(),
                 tree_version: "114514".to_string(),
                 repo_version: "1.0".to_string(),
+                compare: DpkgCompare::Greeter,
             }
         ],
     )
@@ -332,12 +367,14 @@ fn test_get_result_5() {
                 arch: "owo".to_string(),
                 tree_version: "114514".to_string(),
                 repo_version: "114513".to_string(),
+                compare: DpkgCompare::Greeter,
             },
             TreeVsRepo {
                 name: "qaq".to_string(),
                 arch: "pwp".to_string(),
                 tree_version: "114514".to_string(),
                 repo_version: "1.0".to_string(),
+                compare: DpkgCompare::Greeter,
             }
         ],
     )
