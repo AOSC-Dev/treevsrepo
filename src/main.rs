@@ -36,6 +36,9 @@ struct Args {
     /// Set topic (e.g. stable)
     #[clap(short = 't', long, default_value = "stable")]
     topic: String,
+    /// Json output result
+    #[clap(short, long)]
+    json: bool,
 }
 
 fn main() -> Result<()> {
@@ -49,6 +52,8 @@ fn main() -> Result<()> {
 
     if let Some(output) = args.output {
         vs::result_to_file(result, output, now_env)?;
+    } else if args.json {
+        println!("{}", serde_json::to_string(&result)?);
     } else {
         let result = result.into_iter().map(|mut x| match x.compare {
             DpkgCompare::Less => {

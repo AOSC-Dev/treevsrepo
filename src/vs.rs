@@ -1,4 +1,5 @@
 use oma_apt::util::cmp_versions;
+use serde::Serialize;
 use tabled::Tabled;
 
 use crate::repo::RepoPackage;
@@ -7,7 +8,7 @@ use eyre::{eyre, Result};
 use std::cmp::Ordering;
 use std::path::{Path, PathBuf};
 
-#[derive(Tabled, Debug, PartialEq)]
+#[derive(Tabled, Debug, PartialEq, Serialize)]
 pub struct TreeVsRepo {
     pub name: String,
     pub arch: String,
@@ -17,7 +18,7 @@ pub struct TreeVsRepo {
     pub compare: DpkgCompare,
 }
 
-#[derive(Tabled, Debug, PartialEq)]
+#[derive(Tabled, Debug, PartialEq, Serialize)]
 pub enum DpkgCompare {
     Less,
     Equal,

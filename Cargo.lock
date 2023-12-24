@@ -1439,6 +1439,7 @@ dependencies = [
  "oma-apt",
  "reqwest",
  "serde",
+ "serde_json",
  "tabled",
  "tokio",
  "walkdir",
