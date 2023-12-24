@@ -36,7 +36,7 @@ pub fn get_result(
             .filter(|x| x.name == tree_package.name)
             .collect::<Vec<_>>();
         for repo_package in repo_filter_vec.iter() {
-            if tree_package.version == repo_package.version {
+            if cmp_versions(&tree_package.version, &repo_package.version) == Ordering::Equal {
                 continue;
             }
             if tree_package.is_noarch && repo_package.arch != "all" {

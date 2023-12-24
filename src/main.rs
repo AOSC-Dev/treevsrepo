@@ -4,7 +4,7 @@ use eyre::Result;
 use std::io::Write;
 use std::{path::Path, process::Command};
 use tabled::settings::object::Segment;
-use tabled::settings::{Alignment, Format, Modify, Style, Width};
+use tabled::settings::{Alignment, Format, Modify, Style};
 use tabled::Table;
 use vs::DpkgCompare;
 
@@ -68,7 +68,7 @@ fn main() -> Result<()> {
 
         table
             .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(30)))
+            // .with(Modify::new(Segment::all()).with(Width::wrap(60)))
             .with(Style::psql())
             .with(Modify::new(Segment::all()).with(Format::content(|s| format!(" {s} "))));
 
