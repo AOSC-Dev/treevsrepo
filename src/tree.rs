@@ -140,7 +140,7 @@ fn read_ab_with_apml(file: &str) -> Result<HashMap<String, String>> {
         context.insert(i.to_string(), "".to_string());
     }
 
-    abbs_meta_apml::parse(&file, &mut context).map_err(|e| {
+    abbs_meta_apml::parse(file, &mut context).map_err(|e| {
         let e: Vec<String> = e.iter().map(|e| e.to_string()).collect();
         anyhow!(e.join(": "))
     })?;

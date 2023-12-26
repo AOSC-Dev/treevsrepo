@@ -294,7 +294,7 @@ mod test {
 
     #[test]
     fn pkg_ver_from_str() {
-        let source = vec!["1.1.1.", "999:0+git20210608-1"];
+        let source = ["1.1.1.", "999:0+git20210608-1"];
         let result = vec![
             PkgVersion {
                 epoch: 0,
