@@ -22,6 +22,7 @@ const ARCH_LIST_MAINLINE: &[&str] = &[
     "amd64",
     "arm64",
     "ppc64el",
+    "loongarch64",
     "loongson3",
     "mips64r6el",
     "riscv64",
