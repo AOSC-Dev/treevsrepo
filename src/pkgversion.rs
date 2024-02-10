@@ -1,5 +1,4 @@
 use eyre::{bail, format_err, Result};
-use lazy_static::lazy_static;
 use log::warn;
 use nom::{
     character::complete::*,
@@ -7,17 +6,17 @@ use nom::{
     sequence::*,
     IResult, InputTakeAtPosition,
 };
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize, Serializer};
 use std::cmp::Ordering;
 use std::fmt;
 
-lazy_static! {
-    static ref DIGIT_TABLE: Vec<char> = "1234567890".chars().collect();
-    static ref NON_DIGIT_TABLE: Vec<char> =
-        "~|ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-."
-            .chars()
-            .collect();
-}
+static DIGIT_TABLE: Lazy<Vec<char>> = Lazy::new(|| "1234567890".chars().collect());
+static NON_DIGIT_TABLE: Lazy<Vec<char>> = Lazy::new(|| {
+    "~|ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-."
+        .chars()
+        .collect()
+});
 
 /// dpkg style version comparison.
 #[derive(PartialEq, Eq, Clone, Debug, Deserialize)]
