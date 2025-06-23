@@ -4,15 +4,14 @@ use nom::{
     character::complete::*,
     error::{context, ErrorKind},
     sequence::*,
-    IResult, InputTakeAtPosition,
+    IResult, Input, Parser,
 };
-use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize, Serializer};
-use std::cmp::Ordering;
 use std::fmt;
+use std::{cmp::Ordering, sync::LazyLock};
 
-static DIGIT_TABLE: Lazy<Vec<char>> = Lazy::new(|| "1234567890".chars().collect());
-static NON_DIGIT_TABLE: Lazy<Vec<char>> = Lazy::new(|| {
+static DIGIT_TABLE: LazyLock<Vec<char>> = LazyLock::new(|| "1234567890".chars().collect());
+static NON_DIGIT_TABLE: LazyLock<Vec<char>> = LazyLock::new(|| {
     "~|ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-."
         .chars()
         .collect()
@@ -40,16 +39,19 @@ fn standard_parse_version(i: &str) -> IResult<&str, PkgVersion> {
     let (i, epoch) = match context(
         "Parsing epoch...",
         pair::<_, _, _, nom::error::Error<&str>, _, _>(digit1, char(':')),
-    )(i)
+    )
+    .parse(i)
     {
         Ok((i, (epoch, _))) => (i, epoch.parse().unwrap()),
         Err(_) => (i, 0),
     };
-    let (i, upstream_version) = context("Parsing upstream_version...", upstream_version)(i)?;
+    let (i, upstream_version) =
+        context("Parsing upstream_version...", upstream_version).parse(i)?;
     let (i, revision) = match context(
         "Parsing revision...",
         pair::<_, _, _, nom::error::Error<&str>, _, _>(char('-'), digit1),
-    )(i)
+    )
+    .parse(i)
     {
         Ok((i, (_, revision))) => (i, revision.parse().unwrap()),
         Err(_) => (i, 0),
@@ -78,12 +80,14 @@ fn alt_parse_version(i: &str) -> IResult<&str, PkgVersion> {
     let (i, epoch) = match context(
         "Parsing epoch...",
         nom::sequence::pair::<_, _, _, nom::error::Error<&str>, _, _>(digit1, char(':')),
-    )(i)
+    )
+    .parse(i)
     {
         Ok((i, (epoch, _))) => (i, epoch.parse().unwrap()),
         Err(_) => (i, 0),
     };
-    let (i, upstream_version) = context("Parsing upstream_version...", alt_upstream_version)(i)?;
+    let (i, upstream_version) =
+        context("Parsing upstream_version...", alt_upstream_version).parse(i)?;
 
     let res = PkgVersion {
         epoch,
@@ -97,7 +101,7 @@ fn alt_parse_version(i: &str) -> IResult<&str, PkgVersion> {
 /// A public interface for parsing versions. Will try to parse it with standard first.
 /// If that doesn't work, parse it with compatible method
 pub fn parse_version(i: &str) -> IResult<&str, PkgVersion> {
-    let (i, res) = match context("parsing PkgVersion...", standard_parse_version)(i) {
+    let (i, res) = match context("parsing PkgVersion...", standard_parse_version).parse(i) {
         Ok(res) => res,
         Err(_) => {
             warn!(
@@ -107,7 +111,8 @@ pub fn parse_version(i: &str) -> IResult<&str, PkgVersion> {
             context(
                 "Parsing PkgVersion with compatible mode...",
                 alt_parse_version,
-            )(i)?
+            )
+            .parse(i)?
         }
     };
     Ok((i, res))
