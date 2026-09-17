@@ -132,7 +132,7 @@ impl fmt::Display for PkgVersion {
             write!(f, "{}:", self.epoch)?;
         }
         for segment in &self.version {
-            write!(f, "{}", &segment.0)?;
+            write!(f, "{}", segment.0)?;
             if let Some(num) = segment.1 {
                 write!(f, "{num}")?;
             }

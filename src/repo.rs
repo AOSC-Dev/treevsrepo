@@ -64,12 +64,10 @@ pub fn get_repo_package_ver_list(
     });
 
     for i in results {
-        match i {
-            Ok(res) => {
-                let entries = debcontrol::parse_str(&res).map_err(|e| eyre!("{e}"))?;
-                repo_pkgs.extend(parse_packages_file(entries)?);
-            }
-            Err(e) => return Err(e),
+        {
+            let res = i?;
+            let entries = debcontrol::parse_str(&res).map_err(|e| eyre!("{e}"))?;
+            repo_pkgs.extend(parse_packages_file(entries)?);
         }
     }
 
